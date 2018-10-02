@@ -1,0 +1,16 @@
+# Docker compose file to run memcached servers locally
+
+memcached_1:
+  image: memcached
+  ports:
+    - "11211:11211"
+
+memcached_2:
+  image: memcached
+  ports:
+    - "11212:11211"
+
+memcached_3:
+  image: memcached
+  ports:
+    - "11213:11211"
