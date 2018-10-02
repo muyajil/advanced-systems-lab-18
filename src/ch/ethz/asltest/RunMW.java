@@ -22,7 +22,8 @@ public class RunMW {
 		// Start the Middleware
 		// -----------------------------------------------------------------------------
 
-		new MyMiddleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
+		//new MyMiddleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
+		System.out.println("Hello world!");
 
 	}
 
