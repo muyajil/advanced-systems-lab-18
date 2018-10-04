@@ -1,6 +1,7 @@
 package ch.ethz.asl;
 
 import java.util.*;
+import ch.ethz.asl.middleware.*;
 
 public class RunMW {
 
@@ -23,7 +24,7 @@ public class RunMW {
 		// Start the Middleware
 		// -----------------------------------------------------------------------------
 
-		//new MyMiddleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
+		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
 		System.out.println("Hello world!");
 
 	}
