@@ -19,6 +19,7 @@
 
     <target name="init">
         <tstamp/>
+        <delete dir="${build}"/>
         <mkdir dir="${build}"/>
     </target>
 
@@ -57,6 +58,7 @@
         <junit printsummary="withOutAndErr" haltonfailure="no" showoutput="true" outputtoformatters="true">
             <formatter type="plain" usefile="false"/>
             <classpath location="build"/>
+            <classpath location="lib/junit.jar"/>
             <batchtest fork="yes">
                 <fileset dir="${test}">
                     <include name="**/*Test*.java" />
@@ -65,8 +67,7 @@
         </junit>
     </target>
 
-    <target name="clean"
-            description="clean up">
+    <target name="clean" description="clean up">
         <!-- Delete the ${build} and ${dist} directory trees -->
         <delete dir="${build}"/>
         <delete dir="${dist}"/>
