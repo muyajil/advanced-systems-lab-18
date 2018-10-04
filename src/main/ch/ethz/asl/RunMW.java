@@ -25,8 +25,6 @@ public class RunMW {
 		// -----------------------------------------------------------------------------
 
 		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
-		System.out.println("Hello world!");
-
 	}
 
 	private static void parseArguments(String[] args) {
