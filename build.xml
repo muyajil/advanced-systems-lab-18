@@ -6,9 +6,16 @@
 
     <property name="nethzid" value="ajilm"/>
 
-    <property name="src" location="src"/>
+    <path id="lib">
+        <fileset dir="./lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <property name="src" location="src/main"/>
     <property name="build" location="build"/>
     <property name="dist" location="dist"/>
+    <property name="test" location="src/test"/>
 
     <target name="init">
         <tstamp/>
@@ -18,6 +25,9 @@
     <target name="compile" depends="init" description="compile the source">
         <!-- Compile the java code from ${src} into ${build} -->
         <javac srcdir="${src}" destdir="${build}" includeantruntime="false"/>
+        <javac srcdir="${test}" destdir="${build}" includeantruntime="false">
+            <classpath refid="lib" />
+        </javac>
     </target>
 
     <target name="jar" depends="compile" description="generate the distribution">
@@ -27,7 +37,7 @@
         <jar jarfile="${dist}/middleware-${nethzid}.jar" basedir="${build}" compress="true">
             <fileset dir="${src}" includes="**/*.java"/>
             <manifest>
-                <attribute name="Main-Class" value="ch.ethz.asltest.RunMW"/>
+                <attribute name="Main-Class" value="ch.ethz.asl.RunMW"/>
             </manifest>
         </jar>
     </target>
@@ -42,6 +52,18 @@
         </java>
     </target>
 
+
+    <target name="test" depends="compile">
+        <junit printsummary="withOutAndErr" haltonfailure="no" showoutput="true" outputtoformatters="true">
+            <formatter type="plain" usefile="false"/>
+            <classpath location="build"/>
+            <batchtest fork="yes">
+                <fileset dir="${test}">
+                    <include name="**/*Test*.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
 
     <target name="clean"
             description="clean up">
