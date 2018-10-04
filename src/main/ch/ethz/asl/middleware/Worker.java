@@ -1,11 +1,8 @@
 package ch.ethz.asl.middleware;
 
-import ch.ethz.asl.middleware.utils.MiddlewareRequest;
-
 import java.nio.channels.*;
 import java.util.*;
 import java.net.*;
-//import ch.ethz.asl.middleware.utils.*;
 import java.io.*;
 
 public class Worker implements Runnable {
