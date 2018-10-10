@@ -44,6 +44,8 @@ public class Middleware implements Runnable{
                 }
 
                 for (Connection connection : clients.Connections){
+                    MiddlewareRequest request = new MiddlewareRequest();
+                    MiddlewareQueue.Add(request);
                     break;
                 }
             }
