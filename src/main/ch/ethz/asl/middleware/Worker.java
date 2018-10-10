@@ -4,41 +4,39 @@ import java.nio.channels.*;
 import java.util.*;
 import java.net.*;
 import java.io.*;
+import ch.ethz.asl.middleware.utils.*;
 
 public class Worker implements Runnable {
-    private List<SocketChannel> memcachedConnections;
+    private ConnectionManager servers;
+    private List<String> serverAddresses;
     private boolean readSharded;
     private final int id;
 
-    Worker(List<String> memcachedAddresses, boolean readSharded, int id) {
-        this.memcachedConnections = setupConnections(memcachedAddresses);
+    Worker(List<String> serverAddresses, boolean readSharded, int id) {
+        servers = new ConnectionManager(true);
+        this.serverAddresses = serverAddresses;
         this.readSharded = readSharded;
         this.id = id;
     }
 
     @Override
     public void run(){
-        System.out.println("Hello from Worker");
+        try {
+            setupConnections(serverAddresses);
+            System.out.println("Hello from Worker");
+        } catch(Exception e){
+            e.printStackTrace(System.out);
+        }
     }
 
-    private List<SocketChannel> setupConnections(List<String> memcachedAddresses){
-        List<SocketChannel> memcachedConnections = new ArrayList<SocketChannel>();
-        for (String address : memcachedAddresses){
+    private void setupConnections(List<String> serverAddresses) throws IOException {
+        for (String address : serverAddresses){
             String[] parts = address.split(":");
-            try{
-                SocketChannel memcachedSocket = SocketChannel.open();
-                InetSocketAddress memcachedAddress = new InetSocketAddress(
-                        parts[0],
-                        Integer.parseInt(parts[1]));
-                memcachedSocket.connect(memcachedAddress);
-                memcachedConnections.add(memcachedSocket);
-            } catch (IOException e){
-                printToStdout("Reporting and exception:");
-                e.printStackTrace(System.out);
-            }
+            SocketChannel serverSocket = SocketChannel.open();
+            InetSocketAddress serverAddress = new InetSocketAddress(parts[0], Integer.parseInt(parts[1]));
+            serverSocket.connect(serverAddress);
+            servers.addConnection(new Connection(serverSocket));
         }
-
-        return memcachedConnections;
     }
 
     private void printToStdout(String text){

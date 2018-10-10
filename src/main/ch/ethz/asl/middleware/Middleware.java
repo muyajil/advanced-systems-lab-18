@@ -34,7 +34,7 @@ public class Middleware implements Runnable{
     @Override
     public void run(){
         try{
-
+            // Setup Workers
             ServerSocketChannel listeningSocket = getListeningSocket();
 
             while(true){
