@@ -16,7 +16,7 @@
 
     <Loggers>
 
-        <Logger name="Worker" level="trace" additivity="false">
+        <Logger name="Middleware" level="trace" additivity="false">
             <AppenderRef ref="csvFile"/>
         </Logger>
 

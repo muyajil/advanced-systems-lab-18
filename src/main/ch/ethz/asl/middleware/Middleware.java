@@ -22,7 +22,7 @@ public class Middleware implements Runnable{
     private boolean readSharded;
     private List<Thread> workers;
     private int nextRequestId = 0;
-    private static final Logger logger = LogManager.getLogger("Worker");
+    private static final Logger logger = LogManager.getLogger("Middleware");
 
     public Middleware(
         String ipAddress,
@@ -34,6 +34,8 @@ public class Middleware implements Runnable{
         this.ipAddress = ipAddress;
         this.listenPort = port;
         this.readSharded = readSharded;
+        logger.trace(MiddlewareRequest.getHeader());
+
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownWorkers));
         this.workers = getRunningWorkers(numThreads, mcAddresses, readSharded);
     }
@@ -42,7 +44,6 @@ public class Middleware implements Runnable{
     public void run(){
         try{
             ServerSocketChannel listeningSocket = getListeningSocket();
-            logger.trace(MiddlewareRequest.getHeader());
 
             while(true){
                 SocketChannel clientSocket = listeningSocket.accept();
