@@ -43,7 +43,7 @@
         </jar>
     </target>
 
-    <target name="run" depends="compile" description="Run Middleware">
+    <target name="run" depends="jar" description="Run Middleware">
         <java jar="${dist}/middleware-${nethzid}.jar" fork="true">
             <arg line="-l 127.0.0.1"/>
             <arg line="-p 8081"/>
