@@ -12,15 +12,15 @@ public class Clients{
         // prevent instantiation
     }
 
-    public static synchronized void addConnection(Connection connection) throws IOException{
+    public static void addConnection(Connection connection) throws IOException{
         connectionManager.addConnection(connection);
     }
 
-    public static synchronized void putConnection(Connection connection) throws IOException{
+    public static void putConnection(Connection connection) throws IOException{
         connectionManager.putConnection(connection);
     }
 
-    public static synchronized Connection popConnection() throws IOException{
+    public static Connection popConnection() throws IOException{
         return connectionManager.popConnection();
     } 
 }

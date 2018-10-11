@@ -18,18 +18,18 @@ public class ConnectionManager{
         Connections = new LinkedBlockingQueue();
     }
 
-    public void addConnection(Connection connection) throws IOException{
+    public synchronized void addConnection(Connection connection) throws IOException{
         connection.Id = nextId;
         connection.ConfigureBlocking(isBlocking);
         nextId += 1;
         Connections.add(connection);
     }
 
-    public Connection popConnection(){
+    public synchronized Connection popConnection(){
         return Connections.poll();
     }
 
-    public void putConnection(Connection connection){
+    public synchronized void putConnection(Connection connection){
         Connections.add(connection);
     }
 }

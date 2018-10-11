@@ -2,6 +2,7 @@ package ch.ethz.asl.middleware.utils;
 
 import java.util.List;
 import ch.ethz.asl.middleware.utils.Connection;
+import java.util.*;
 
 public class MiddlewareRequest {
     public int requestId;
@@ -20,4 +21,12 @@ public class MiddlewareRequest {
     public int queueLength;
     public long sentToServerNano;
     public long returnedToClientNano;
+
+    public void parse(){
+        throw new UnsupportedOperationException();
+    }
+
+    public void ToString(){
+        throw new UnsupportedOperationException();
+    }
 }
