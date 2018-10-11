@@ -24,7 +24,7 @@ public class Connection{
         this.isBlocking = isBlocking;
     }
 
-    public String read() throws IOException{
+    public synchronized String read() throws IOException{
         if(this.isBlocking){
             return readBlocking();
         }
@@ -54,5 +54,15 @@ public class Connection{
         }
 
         return new String(buffer.array()).substring(0, totalBytesRead);
+    }
+
+    public synchronized void write(String message){
+        buffer.clear();
+        buffer.put(message.getBytes());
+        buffer.flip();
+        while(buffer.hasRemaining()){
+            socketChannel.write(buffer);
+        }
+        buffer.flip();
     }
 }
