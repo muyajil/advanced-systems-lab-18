@@ -5,29 +5,30 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 import ch.ethz.asl.middleware.utils.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Worker implements Runnable {
     private ConnectionManager servers;
     private List<String> serverAddresses;
     private boolean readSharded;
     private final int id;
-    private List<MiddlewareRequest> processedRequests;
+    private static final Logger logger = LogManager.getLogger("Worker");
 
     public Worker(List<String> serverAddresses, boolean readSharded, int id) {
         servers = new ConnectionManager(true);
         this.serverAddresses = serverAddresses;
         this.readSharded = readSharded;
         this.id = id;
-        this.processedRequests = new ArrayList<>();
     }
 
     @Override
     public void run(){
         try {
             setupConnections(serverAddresses);
-            System.out.println("Hello from Worker");
+            logger.trace("HelloWorld!" + this.id);
         } catch(Exception e){
-            e.printStackTrace(System.out);
+            logger.error(e);
         }
     }
 
@@ -39,10 +40,6 @@ public class Worker implements Runnable {
             serverSocket.connect(serverAddress);
             servers.addConnection(new Connection(serverSocket));
         }
-    }
-
-    private void printLogs(){
-        throw new UnsupportedAddressTypeException();
     }
 }
 

@@ -15,7 +15,7 @@ public class ConnectionManager{
     public ConnectionManager(boolean isBlocking){
         nextId = 0;
         this.isBlocking = isBlocking;
-        Connections = new LinkedBlockingQueue();
+        Connections = new LinkedBlockingQueue<Connection>();
     }
 
     public synchronized void addConnection(Connection connection) throws IOException{

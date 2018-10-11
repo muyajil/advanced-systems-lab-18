@@ -7,7 +7,7 @@ import ch.ethz.asl.middleware.utils.*;
 
 public class MiddlewareQueue{
 
-    private static BlockingQueue<MiddlewareRequest> queue = new LinkedBlockingQueue();
+    private static BlockingQueue<MiddlewareRequest> queue = new LinkedBlockingQueue<MiddlewareRequest>();
 
     private MiddlewareQueue(){
         // prevent instantiation

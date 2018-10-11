@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -18,8 +20,9 @@ public class Middleware implements Runnable{
     private String ipAddress;
     private int listenPort;
     private boolean readSharded;
-    private List<Worker> workers;
+    private List<Thread> workers;
     private int nextRequestId = 0;
+    private static final Logger logger = LogManager.getLogger("Worker");
 
     public Middleware(
         String ipAddress,
@@ -31,6 +34,7 @@ public class Middleware implements Runnable{
         this.ipAddress = ipAddress;
         this.listenPort = port;
         this.readSharded = readSharded;
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownWorkers));
         this.workers = getRunningWorkers(numThreads, mcAddresses, readSharded);
     }
 
@@ -38,6 +42,7 @@ public class Middleware implements Runnable{
     public void run(){
         try{
             ServerSocketChannel listeningSocket = getListeningSocket();
+            logger.trace(MiddlewareRequest.getHeader());
 
             while(true){
                 SocketChannel clientSocket = listeningSocket.accept();
@@ -67,7 +72,7 @@ public class Middleware implements Runnable{
             }
 
         } catch(Exception e){
-            e.printStackTrace(System.out);
+            logger.error(e);
         }
     }
 
@@ -78,13 +83,26 @@ public class Middleware implements Runnable{
         return listeningSocket;
     }
 
-    private List<Worker> getRunningWorkers(int numWorkers, List<String> mcAddresses, boolean readSharded){
-        List<Worker> workers = new ArrayList<>();
+    private List<Thread> getRunningWorkers(int numWorkers, List<String> mcAddresses, boolean readSharded){
+        List<Thread> workers = new ArrayList<>();
         for (int i = 0; i < numWorkers; i++){
-            Worker worker = new Worker(mcAddresses, readSharded, i);
-            worker.run();
+            Thread worker = new Thread(new Worker(mcAddresses, readSharded, i));
+            worker.start();
             workers.add(worker);
         }
+        
         return workers;
+    }
+
+    private void shutdownWorkers(){
+        for (Thread worker : this.workers){
+            try {
+                worker.interrupt();
+                worker.join();
+            } catch (InterruptedException e) {
+                logger.error(e);
+            }
+        }
+        LogManager.shutdown();
     }
 }

@@ -23,7 +23,7 @@ public class RunMW {
 		// -----------------------------------------------------------------------------
 		// Start the Middleware
 		// -----------------------------------------------------------------------------
-
+		System.setProperty("csvLogFilename", "logs.csv");
 		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
 	}
 

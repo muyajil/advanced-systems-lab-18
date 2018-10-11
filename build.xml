@@ -5,17 +5,17 @@
     <!-- set global properties for this build -->
 
     <property name="nethzid" value="ajilm"/>
-
-    <path id="lib">
-        <fileset dir="./lib">
-            <include name="*.jar"/>
-        </fileset>
-    </path>
-
     <property name="src" location="src/main"/>
     <property name="build" location="build"/>
     <property name="dist" location="dist"/>
     <property name="test" location="src/test"/>
+    <property name="lib" location="lib"/>
+
+    <path id="lib">
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
 
     <target name="init">
         <tstamp/>
@@ -25,10 +25,15 @@
 
     <target name="compile" depends="init" description="compile the source">
         <!-- Compile the java code from ${src} into ${build} -->
-        <javac srcdir="${src}" destdir="${build}" includeantruntime="false"/>
+        <javac srcdir="${src}" destdir="${build}" includeantruntime="false" classpathref="lib">
+	    <compilerarg value="-Xlint:unchecked"/>
+	</javac>
         <javac srcdir="${test}" destdir="${build}" includeantruntime="false">
             <classpath refid="lib" />
         </javac>
+	
+ 	<copy file="${src}/ch/ethz/asl/config/log4j.xml" tofile="${build}/log4j2.xml"/>
+	
     </target>
 
     <target name="jar" depends="compile" description="generate the distribution">
@@ -36,6 +41,7 @@
         <mkdir dir="${dist}"/>
         <!-- Put everything in ${build} into the jar file -->
         <jar jarfile="${dist}/middleware-${nethzid}.jar" basedir="${build}" compress="true">
+	    <zipgroupfileset dir="${lib}" includes="**/*.jar"/>
             <fileset dir="${src}" includes="**/*.java"/>
             <manifest>
                 <attribute name="Main-Class" value="ch.ethz.asl.RunMW"/>
@@ -58,7 +64,7 @@
         <junit printsummary="withOutAndErr" haltonfailure="no" showoutput="true" outputtoformatters="true">
             <formatter type="plain" usefile="false"/>
             <classpath location="build"/>
-            <classpath location="lib/junit.jar"/>
+            <classpath refid="lib"/>
             <batchtest fork="yes">
                 <fileset dir="${test}">
                     <include name="**/*Test*.java" />
