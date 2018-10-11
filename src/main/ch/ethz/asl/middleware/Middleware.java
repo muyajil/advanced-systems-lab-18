@@ -7,16 +7,19 @@ import java.nio.channels.SocketChannel;
 
 import java.util.*;
 
-import ch.ethz.asl.middleware.utils.*;
+import ch.ethz.asl.middleware.utils.Connection;
+import ch.ethz.asl.middleware.utils.ConnectionManager;
+import ch.ethz.asl.middleware.utils.MiddlewareRequest;
+import ch.ethz.asl.middleware.Worker;
+import ch.ethz.asl.middleware.MiddlewareQueue;
 
 public class Middleware implements Runnable{
 
     private String ipAddress;
     private int listenPort;
     private boolean readSharded;
-    private List<Thread> workerThreads;
-    private int requestId = 0;
-    private ConnectionManager clients = new ConnectionManager(false);
+    private List<Worker> workers;
+    private int nextRequestId = 0;
 
     public Middleware(
         String ipAddress,
@@ -28,25 +31,38 @@ public class Middleware implements Runnable{
         this.ipAddress = ipAddress;
         this.listenPort = port;
         this.readSharded = readSharded;
-        this.workerThreads = new ArrayList<>();
+        this.workers = getRunningWorkers(numThreads, mcAddresses, readSharded);
     }
 
     @Override
     public void run(){
         try{
-            // Setup Workers
             ServerSocketChannel listeningSocket = getListeningSocket();
 
             while(true){
                 SocketChannel clientSocket = listeningSocket.accept();
                 if (clientSocket != null){
-                    clients.addConnection(new Connection(clientSocket));
+                    Clients.addConnection(new Connection(clientSocket));
                 }
 
-                for (Connection connection : clients.Connections){
-                    MiddlewareRequest request = new MiddlewareRequest();
-                    MiddlewareQueue.Add(request);
-                    break;
+                Connection client = Clients.popConnection();
+                if (client != null){
+                    String command = client.read();
+                    if (command != ""){
+                        MiddlewareQueue.Add(new MiddlewareRequest(){{
+                            connection = client;
+                            commands = new ArrayList<String>(){{
+                                add(command);
+                            }};
+                            requestId = nextRequestId;
+                            clientId = client.Id;
+                            enqueueMilli = System.currentTimeMillis();
+                            enqueueNano = System.nanoTime();
+                        }});
+                        nextRequestId++;
+                    } else {
+                        Clients.putConnection(client);
+                    }
                 }
             }
 
@@ -60,5 +76,15 @@ public class Middleware implements Runnable{
         listeningSocket.socket().bind(new InetSocketAddress(listenPort));
         listeningSocket.configureBlocking(false);
         return listeningSocket;
+    }
+
+    private List<Worker> getRunningWorkers(int numWorkers, List<String> mcAddresses, boolean readSharded){
+        List<Worker> workers = new ArrayList<>();
+        for (int i = 0; i < numWorkers; i++){
+            Worker worker = new Worker(mcAddresses, readSharded, i);
+            worker.run();
+            workers.add(worker);
+        }
+        return workers;
     }
 }

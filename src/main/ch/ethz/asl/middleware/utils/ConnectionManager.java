@@ -2,24 +2,34 @@ package ch.ethz.asl.middleware.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 
 public class ConnectionManager{
     
     private int nextId;
     private boolean isBlocking;
-    public List<Connection> Connections;
+    private BlockingQueue<Connection> Connections;
 
     public ConnectionManager(boolean isBlocking){
         nextId = 0;
         this.isBlocking = isBlocking;
-        Connections = new ArrayList<Connection>();
+        Connections = new LinkedBlockingQueue();
     }
 
     public void addConnection(Connection connection) throws IOException{
         connection.Id = nextId;
         connection.ConfigureBlocking(isBlocking);
         nextId += 1;
+        Connections.add(connection);
+    }
+
+    public Connection popConnection(){
+        return Connections.poll();
+    }
+
+    public void putConnection(Connection connection){
         Connections.add(connection);
     }
 }

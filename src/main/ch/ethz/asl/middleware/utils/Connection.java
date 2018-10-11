@@ -49,14 +49,22 @@ public class Connection{
         buffer.clear();
         int totalBytesRead = socketChannel.read(buffer);
 
-        if(totalBytesRead <= 0){
-            return "";
+        while(true){
+            totalBytesRead += socketChannel.read(buffer);
+
+            if(totalBytesRead <= 0){
+                return "";
+            }
+
+            if(buffer.array()[totalBytesRead - 1] == 10){
+                break;
+            }
         }
 
         return new String(buffer.array()).substring(0, totalBytesRead);
     }
 
-    public synchronized void write(String message){
+    public synchronized void write(String message) throws IOException{
         buffer.clear();
         buffer.put(message.getBytes());
         buffer.flip();

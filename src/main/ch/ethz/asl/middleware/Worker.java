@@ -11,12 +11,14 @@ public class Worker implements Runnable {
     private List<String> serverAddresses;
     private boolean readSharded;
     private final int id;
+    private List<MiddlewareRequest> processedRequests;
 
-    Worker(List<String> serverAddresses, boolean readSharded, int id) {
+    public Worker(List<String> serverAddresses, boolean readSharded, int id) {
         servers = new ConnectionManager(true);
         this.serverAddresses = serverAddresses;
         this.readSharded = readSharded;
         this.id = id;
+        this.processedRequests = new ArrayList<>();
     }
 
     @Override
