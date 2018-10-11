@@ -41,10 +41,9 @@ public class Worker implements Runnable {
         }
     }
 
-    private void printToStdout(String text){
-        System.out.println("Time: " + System.nanoTime() + " Worker " + Integer.toString(this.id) + ": " + text);
+    private void printLogs(){
+        throw new UnsupportedAddressTypeException();
     }
-
 }
 
 
