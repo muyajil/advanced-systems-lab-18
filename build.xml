@@ -60,6 +60,8 @@
             <arg line="-t 2"/>
             <arg line="-s false"/>
             <arg line="-m 127.0.0.1:11211"/>
+            <arg line="-m 127.0.0.1:11212"/>
+            <arg line="-m 127.0.0.1:11213"/>
         </java>
     </target>
 
