@@ -59,6 +59,20 @@
         </java>
     </target>
 
+    <target name="runlocal" depends="jar" description="Run Middleware">
+        <exec executable="docker-compose" failonerror="true">
+            <arg line="-f memcached.yml"/>
+            <arg line="up -d"/>
+        </exec>
+        <java jar="${dist}/middleware-${nethzid}.jar" fork="true">
+            <arg line="-l 127.0.0.1"/>
+            <arg line="-p 8081"/>
+            <arg line="-t 2"/>
+            <arg line="-s false"/>
+            <arg line="-m 127.0.0.1:11211"/>
+        </java>
+    </target>
+
 
     <target name="test" depends="compile">
         <junit printsummary="withOutAndErr" haltonfailure="no" showoutput="true" outputtoformatters="true">
