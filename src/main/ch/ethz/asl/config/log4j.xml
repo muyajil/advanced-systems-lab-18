@@ -20,6 +20,10 @@
             <AppenderRef ref="csvFile"/>
         </Logger>
 
+        <Logger name="Worker" level="trace" additivity="false">
+            <AppenderRef ref="csvFile"/>
+        </Logger>
+
         <Root level="debug" additivity="false">
             <AppenderRef ref="console"/>
         </Root>

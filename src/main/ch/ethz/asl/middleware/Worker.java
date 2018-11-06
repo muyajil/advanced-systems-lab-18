@@ -26,7 +26,7 @@ public class Worker implements Runnable {
     public void run(){
         try {
             setupConnections(serverAddresses);
-            logger.trace("HelloWorld!" + this.id);
+            logger.trace("HelloWorld! from:" + this.id);
         } catch(Exception e){
             logger.error(e);
         }

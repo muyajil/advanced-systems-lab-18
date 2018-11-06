@@ -4,6 +4,7 @@ import ch.ethz.asl.middleware.utils.Connection;
 import java.util.*;
 
 public class MiddlewareRequest {
+    public int workerId;
     public int requestId;
     public Connection connection;
     public String requestType;
@@ -32,14 +33,14 @@ public class MiddlewareRequest {
                 break;
             case "get":
                 if (!readSharded){
-                    if (elems.length < 2){
+                    if (elems.length <= 2){
                         requestType = "GET";
                     } else{
                         requestType = "MUlTI-GET";
                         multiGetSize = elems.length - 1;
                     }
                 } else{
-                    if (elems.length < 2){
+                    if (elems.length <= 2){
                         requestType = "GET";
                     } else{
                         requestType = "MULTI-GET";
@@ -56,7 +57,9 @@ public class MiddlewareRequest {
     }
 
     public String ToString(){
-        return requestId + 
+        return workerId + 
+            "," +
+            requestId + 
             "," +
             requestType +
             "," +
@@ -80,8 +83,7 @@ public class MiddlewareRequest {
             "," +
             returnedToClientNano +
             "," +
-            queueLength +
-            "\n";
+            queueLength;
 
     }
 
@@ -90,6 +92,6 @@ public class MiddlewareRequest {
     }
 
     public static String getHeader(){
-        return "RequestId,RequestType,ClientId,ServerId,MultiGetSize,IsSuccessful,Response,Error,EnqueueNano,DequeueNano,SentToServerNano,ReturnedToClientNano,QueueLength\n";
+        return "WorkerId,RequestId,RequestType,ClientId,ServerId,MultiGetSize,IsSuccessful,Response,Error,EnqueueNano,DequeueNano,SentToServerNano,ReturnedToClientNano,QueueLength";
     }
 }

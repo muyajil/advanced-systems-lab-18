@@ -50,6 +50,9 @@
     </target>
 
     <target name="run" depends="jar" description="Run Middleware">
+        <exec executable="rm" failonerror="true">
+            <arg line="logs.csv"/>
+        </exec>
         <exec executable="docker-compose" failonerror="true">
             <arg line="-f memcached.yml"/>
             <arg line="up -d"/>
