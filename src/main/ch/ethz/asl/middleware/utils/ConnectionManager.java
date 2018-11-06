@@ -20,7 +20,7 @@ public class ConnectionManager{
 
     public synchronized void addConnection(Connection connection) throws IOException{
         connection.Id = nextId;
-        connection.ConfigureBlocking(isBlocking);
+        connection.configureBlocking(isBlocking);
         nextId += 1;
         Connections.add(connection);
     }

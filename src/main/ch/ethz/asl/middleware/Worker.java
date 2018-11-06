@@ -26,9 +26,11 @@ public class Worker implements Runnable {
     public void run(){
         try {
             setupConnections(serverAddresses);
-            logger.trace("HelloWorld! from:" + this.id);
+            MiddlewareRequest request = MiddlewareQueue.take();
+            logger.trace(request.toString());
+            Clients.addConnection(request.connection);
         } catch(Exception e){
-            logger.error(e);
+            logger.error("Worker " + this.id + " " + e);
         }
     }
 

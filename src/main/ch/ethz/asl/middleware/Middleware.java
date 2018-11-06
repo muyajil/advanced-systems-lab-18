@@ -23,6 +23,7 @@ public class Middleware implements Runnable{
     private List<Thread> workers;
     private int nextRequestId = 0;
     private static final Logger logger = LogManager.getLogger("Middleware");
+    private boolean isShutdown;
 
     public Middleware(
         String ipAddress,
@@ -45,7 +46,7 @@ public class Middleware implements Runnable{
         try{
             ServerSocketChannel listeningSocket = getListeningSocket();
 
-            while(true){
+            while(!isShutdown){
                 SocketChannel clientSocket = listeningSocket.accept();
                 if (clientSocket != null){
                     Clients.addConnection(new Connection(clientSocket));
@@ -54,10 +55,10 @@ public class Middleware implements Runnable{
                 Connection client = Clients.popConnection();
                 if (client != null){
                     String command = client.read();
-                    if (command != ""){
-                        MiddlewareQueue.Add(new MiddlewareRequest(){{
+                    if (!command.equals("")){
+                        MiddlewareQueue.add(new MiddlewareRequest(){{
                             connection = client;
-                            commands = new ArrayList<String>(){{
+                            commands = new ArrayList<>(){{
                                 add(command);
                             }};
                             requestId = nextRequestId;
@@ -71,9 +72,10 @@ public class Middleware implements Runnable{
                     }
                 }
             }
+            LogManager.shutdown();
 
         } catch(Exception e){
-            logger.error(e);
+            logger.error("Middleware: " + e);
         }
     }
 
@@ -100,10 +102,10 @@ public class Middleware implements Runnable{
             try {
                 worker.interrupt();
                 worker.join();
+                isShutdown = true;
             } catch (InterruptedException e) {
                 logger.error(e);
             }
         }
-        LogManager.shutdown();
     }
 }

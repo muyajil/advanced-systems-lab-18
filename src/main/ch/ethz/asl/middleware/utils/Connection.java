@@ -15,8 +15,7 @@ public class Connection{
 
     public Connection(SocketChannel socketChannel){
         this.socketChannel = socketChannel;
-        // TODO: Check if 1kb is enough for all cases
-        this.buffer = ByteBuffer.allocate(1024);
+        this.buffer = ByteBuffer.allocate(51200); // 50kb is enough to cover all cases
     }
 
     public void configureBlocking(boolean isBlocking) throws IOException{

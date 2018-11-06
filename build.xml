@@ -58,7 +58,7 @@
             <arg line="up -d"/>
         </exec>
         <java jar="${dist}/middleware-${nethzid}.jar" fork="true">
-            <arg line="-l 127.0.0.1"/>
+            <arg line="-l 0.0.0.0"/>
             <arg line="-p 8081"/>
             <arg line="-t 2"/>
             <arg line="-s false"/>

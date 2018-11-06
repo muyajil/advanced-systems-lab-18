@@ -35,6 +35,7 @@ public class MiddlewareRequest {
                 if (!readSharded){
                     if (elems.length <= 2){
                         requestType = "GET";
+                        multiGetSize = 1;
                     } else{
                         requestType = "MUlTI-GET";
                         multiGetSize = elems.length - 1;
@@ -42,9 +43,10 @@ public class MiddlewareRequest {
                 } else{
                     if (elems.length <= 2){
                         requestType = "GET";
+                        multiGetSize = 1;
                     } else{
                         requestType = "MULTI-GET";
-                        commands = shardCommand(elems, numServers);
+                        // commands = shardCommand(elems, numServers);
                         multiGetSize = elems.length - 1;
                     }
                 }
@@ -56,7 +58,7 @@ public class MiddlewareRequest {
         throw new UnsupportedOperationException();
     }
 
-    public String ToString(){
+    public String toString(){
         return workerId + 
             "," +
             requestId + 

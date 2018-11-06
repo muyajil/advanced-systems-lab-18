@@ -13,11 +13,11 @@ public class MiddlewareQueue{
         // prevent instantiation
     }
 
-    public static void Add(MiddlewareRequest request) throws InterruptedException{
+    public static void add(MiddlewareRequest request) throws InterruptedException{
         queue.put(request);
     }
 
-    public static synchronized MiddlewareRequest Take() throws InterruptedException{
+    public static synchronized MiddlewareRequest take() throws InterruptedException{
         return queue.take();
     }
 }
