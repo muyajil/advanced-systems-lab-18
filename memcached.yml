@@ -10,10 +10,10 @@ memcached_2:
   image: memcached
   net: "host"
   ports:
-    - "11212:11212"
+    - "11212:11211"
 
 memcached_3:
   image: memcached
   net: "host"
   ports:
-    - "11213:11213"
+    - "11213:11211"
