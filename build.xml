@@ -49,7 +49,7 @@
         </jar>
     </target>
 
-    <target name="runlocal" depends="jar" description="Run Middleware">
+    <target name="run" depends="jar" description="Run Middleware">
         <exec executable="docker-compose" failonerror="true">
             <arg line="-f memcached.yml"/>
             <arg line="up -d"/>
