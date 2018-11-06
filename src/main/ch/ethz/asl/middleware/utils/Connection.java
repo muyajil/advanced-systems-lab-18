@@ -19,12 +19,12 @@ public class Connection{
         this.buffer = ByteBuffer.allocate(1024);
     }
 
-    public void ConfigureBlocking(boolean isBlocking) throws IOException{
+    public void configureBlocking(boolean isBlocking) throws IOException{
         socketChannel.configureBlocking(isBlocking);
         this.isBlocking = isBlocking;
     }
 
-    public synchronized String Read() throws IOException{
+    public synchronized String read() throws IOException{
         if(this.isBlocking){
             return readBlocking();
         }
@@ -64,7 +64,7 @@ public class Connection{
         return new String(buffer.array()).substring(0, totalBytesRead);
     }
 
-    public synchronized void Write(String message) throws IOException{
+    public synchronized void write(String message) throws IOException{
         buffer.clear();
         buffer.put(message.getBytes());
         buffer.flip();
