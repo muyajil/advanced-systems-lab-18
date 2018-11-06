@@ -27,6 +27,9 @@ public class Worker implements Runnable {
         try {
             setupConnections(serverAddresses);
             MiddlewareRequest request = MiddlewareQueue.take();
+            request.dequeueNano = request.getRealTimestamp(System.nanoTime());
+
+            // Finished processing request therefore we print it and give the connection back into the client pool
             logger.trace(request.toString());
             Clients.addConnection(request.connection);
         } catch(Exception e){

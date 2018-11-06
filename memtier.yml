@@ -6,11 +6,11 @@ set:
   command: -s 127.0.0.1 -p 8081 -P memcache_text -c 16 -t 4 --test-time 60 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio 1:0
 
 get:
-  image: memcached
+  image: memtier_benchmark
   net: "host"
   command: -s 127.0.0.1 -p 8081 -P memcache_text -c 16 -t 4 --test-time 60 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio 0:1
 
 mget:
-  image: memcached
+  image: memtier_benchmark
   net: "host"
   command: -s 127.0.0.1 -p 8081 -P memcache_text -c 16 -t 4 --test-time 60 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio 1:10 --multi-key-get=10
