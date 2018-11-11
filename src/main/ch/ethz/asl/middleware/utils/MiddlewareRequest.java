@@ -46,16 +46,38 @@ public class MiddlewareRequest {
                         multiGetSize = 1;
                     } else{
                         requestType = "MULTI-GET";
-                        // commands = shardCommand(elems, numServers);
+                        commands = shardCommand(elems, numServers);
                         multiGetSize = elems.length - 1;
                     }
                 }
+                break;
+            default:
+                break;
         }
     }
 
     private List<String> shardCommand(String[] keys, int numShards){
-        // TODO
-        throw new UnsupportedOperationException();
+        List<String> commands = new ArrayList<>();
+        int minKeysPerShard = keys.length/numShards;
+        int overflow = keys.length % numShards;
+        int idx = 0;
+        for (int i = 0; i < numShards; i++){
+            StringBuilder command = new StringBuilder();
+            command.append("get ");
+            for (int j = 0; j < minKeysPerShard; j++){
+                command.append(keys[idx++]);
+                command.append(" ");
+
+                if (overflow > 0){
+                    command.append(keys[idx++]);
+                    command.append(" ");
+                    overflow--;
+                }
+            }
+            command.append("\r\n");
+            commands.add(command.toString());
+        }
+        return commands;
     }
 
     public String toString(){
