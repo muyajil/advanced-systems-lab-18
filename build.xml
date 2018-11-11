@@ -50,7 +50,7 @@
     </target>
 
     <target name="run" depends="jar" description="Run Middleware">
-        <exec executable="rm" failonerror="true">
+        <exec executable="rm" failonerror="false">
             <arg line="logs.csv"/>
         </exec>
         <exec executable="docker-compose" failonerror="true">

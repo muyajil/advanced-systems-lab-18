@@ -20,4 +20,8 @@ public class MiddlewareQueue{
     public static synchronized MiddlewareRequest take() throws InterruptedException{
         return queue.take();
     }
+
+    public static int getQueueLength(){
+        return queue.size();
+    }
 }
