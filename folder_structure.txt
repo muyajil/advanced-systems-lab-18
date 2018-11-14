@@ -1,0 +1,8 @@
+Folder structure:
+
+tests/servers.json
+tests/id_rsa
+tests/id_rsa.pub
+tests/testname/config.json
+tests/testname/logs/timestamp or runID/iteration/middleware/i.csv
+tests/testname/logs/timestamp or runID/iteration/memtierlogs/i.log

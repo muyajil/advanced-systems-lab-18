@@ -1,4 +1,3 @@
-from OpenSSL import crypto
 import paramiko
 import time
 from io import StringIO
