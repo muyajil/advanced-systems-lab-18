@@ -1,6 +1,8 @@
 Folder structure:
 
 tests/servers.json
+tests/memcached.yml
+tests/memtier.yml
 tests/id_rsa
 tests/id_rsa.pub
 tests/testname/config.json

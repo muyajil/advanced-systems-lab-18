@@ -1,6 +1,7 @@
 import os
 import json
 
+
 class TestConfiguration(object):
 
     base_dir = None

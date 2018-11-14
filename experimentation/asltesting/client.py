@@ -1,3 +1,4 @@
+import subprocess
 import paramiko
 import time
 from io import StringIO
@@ -22,12 +23,24 @@ def get_ssh_client(host, key, username):
     return ssh_client
 
 
-class SSHClient(object):
+class Client(object):
+
+    def exec_and_wait(self, command):
+        raise NotImplementedError
+
+    def exec_and_return_stdout(self, command):
+        raise NotImplementedError
+
+    def exec_and_forget(self, command):
+        raise NotImplementedError
+
+
+class SSHClient(Client):
 
     client = None
 
-    def __init__(self, host, key, username):
-        self.client = get_ssh_client(host, key, username)
+    def __init__(self, config):
+        self.client = get_ssh_client(config['host'], config['key'], config['username'])
 
     def exec_and_wait(self, command):
         _, stdout, stderr = self.client.exec_command(command)
@@ -55,3 +68,15 @@ class SSHClient(object):
             if exit_status != 0:
                 raise RuntimeError('Received non-zero exit status\nCommand: \
                         {}\nError: {}'.format(command, stderr.read().decode('utf-8')))
+
+
+class BashClient(Client):
+
+    def exec_and_wait(self, command):
+        raise NotImplementedError
+
+    def exec_and_return_stdout(self, command):
+        raise NotImplementedError
+
+    def exec_and_forget(self, command):
+        raise NotImplementedError
