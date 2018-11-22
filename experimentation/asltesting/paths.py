@@ -1,0 +1,6 @@
+MEMCACHED_YML = '/home/muy/repositories/asl18/experimentation/memcached.yml'
+MEMTIER_YML = '/home/muy/repositories/asl18/experimentation/memtier.yml'
+PRIVATE_KEY = '/home/muy/repositories/asl18/experimentation/id_rsa'
+PUBLIC_KEY = '/home/muy/repositories/asl18/experimentation/id_rsa.pub'
+SERVER_CONFIG = '/home/muy/repositories/asl18/experimentation/servers.json'
+BUILD_XML = '/home/muy/repositories/asl18/build.xml'

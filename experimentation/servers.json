@@ -1,0 +1,16 @@
+{
+  "memcached": {
+    "0": "ajilmforaslvm1",
+    "1": "ajilmforaslvm2",
+    "2": "ajilmforaslvm3"
+  },
+  "middleware": {
+    "0": "ajilmforaslvm4",
+    "1": "ajilmforaslvm5"
+  },
+  "memtier": {
+    "0": "ajilmforaslvm6",
+    "1": "ajilmforaslvm7",
+    "2": "ajilmforaslvm8"
+  }
+}
