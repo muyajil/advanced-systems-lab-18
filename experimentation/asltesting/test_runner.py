@@ -1,34 +1,39 @@
-from asltesting.client import BashClient, SSHClient
+from asltesting.bash import BashClient
+from asltesting import paths
+
+example_run_config = {
+    "name": "example_test_config",
+
+    "num_memcached_servers": 1,
+
+    "num_middlewares": 1,
+    "num_threads_per_mw_range": [1],
+
+    "num_client_machines": 1,
+    "num_memtier_per_client": 1,
+    "num_threads_per_memtier": 1,
+    "num_clients_per_thread_range": [1],
+
+    "sharded": False,
+    "multi_get_size_range": [1],
+
+    "workloads": [(1, 0)]
+}
 
 
-class TestRunner(object):
+class LocalTestRunner(object):
 
-    local = None
-    client = None
-
-    def __init__(self, local, ssh_config=None):
-        self.local = local
-        if self.local:
-            self.client = BashClient()
-        else:
-            if ssh_config is None:
-                raise RuntimeError('You need to pass ssh_config')
-            self.client = SSHClient(ssh_config)
+    def __init__(self, num_runs):
+        self.client = BashClient() # TODO one client per process -> then it is applicable to SSHClient as well!
+        self.num_runs = num_runs
 
     def run_test(self, test_config):
-        if self.local:
-            self.run_local(test_config)
-        else:
-            self.run_remote(test_config)
+        self.client.exec_and_wait('/bin/bash -c docker-compose -f {} up'.format(paths.MEMCACHED_YML))
 
-    def run_local(self, test_config):
-        self.client.exec_and_wait('/bin/bash -c docker-compose -f {} up'.format(test_config['memcached_yml_path']))
-        if test_config['sharded']:
-            self.client.exec_and_wait('/bin/bash -c ant -f {} runSharded'.format(test_config['build_xml_path'])) # TODO: Handle multiple middlewares
-        else:
-            self.client.exec_and_wait('/bin/bash -c ant -f {} run'.format(test_config['build_xml_path']))
+        for run in range(self.num_runs):
+            self.client.exec_and_forget('/bin/bash -c ant -f {} run1'.format(paths.BUILD_XML))
+            if test_config.run_configuration['num_middlewares'] > 1:
+                self.client.exec_and_forget('/bin/bash -c ant -f {} run1'.format(paths.BUILD_XML))
 
         self.client.exec_and_wait('/bin/bash -c docker-compose -f {} run {}'.format(test_config['memtier_yml_path'], test_config['memtier_target'])) # TODO: Need to parametrize the memtier command!
 
-    def run_remote(self, test_config):
-        raise NotImplementedError
