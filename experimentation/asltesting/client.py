@@ -31,11 +31,11 @@ class BashClient(Client):
         pass
 
     def exec_and_wait(self, command):
-        stdout = subprocess.check_output(command)
+        stdout = subprocess.check_output(command, shell=True).decode('utf-8')
         return stdout
 
     def exec_and_forget(self, command):
-        subprocess.Popen(command)
+        subprocess.Popen(command, shell=True)
 
     def close(self):
         pass
@@ -72,8 +72,7 @@ class SSHClient(Client):
         _, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status != 0:
-            raise RuntimeError('Received non-zero exit status\nCommand: \
-            {}\nError: {}'.format(command, stderr.read().decode('utf-8')))
+            raise RuntimeError('Received non-zero exit status\nCommand: {}\nError: {}'.format(command, stderr.read().decode('utf-8')))
         else:
             return stdout.read().decode('utf-8')
 
@@ -85,5 +84,9 @@ class SSHClient(Client):
             exit_status = stdout.channel.recv_exit_status()
 
             if exit_status != 0:
-                raise RuntimeError('Received non-zero exit status\nCommand: \
-                        {}\nError: {}'.format(command, stderr.read().decode('utf-8')))
+                raise RuntimeError('Received non-zero exit status\nCommand: {}\nError: {}'.format(command, stderr.read().decode('utf-8')))
+
+    def get_internal_ip(self):
+        _, stdout, _ = self.client.exec_command("""sh -c 'ifconfig eth0 | grep "inet addr" | cut -d ":" -f 2 | cut -d " " -f 1'""")
+        ip = stdout.readlines()[0].rstrip()
+        return ip

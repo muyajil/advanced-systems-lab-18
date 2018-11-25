@@ -59,3 +59,8 @@ mget10:
   image: memtier_benchmark
   net: "host"
   command: -s 127.0.0.1 -p 8081 -P memcache_text -c 16 -t 4 --requests 10 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio 1:10 --multi-key-get=10
+
+memtier:
+  image: memtier_benchmark
+  net: "host"
+  command: --help

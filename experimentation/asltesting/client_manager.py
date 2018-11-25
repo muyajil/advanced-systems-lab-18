@@ -7,7 +7,7 @@ class ClientManager(object):
 
     def __init__(self, local):
         self.local = local
-        self.server_config = json.load(open(paths.SERVER_CONFIG, 'r'))
+        self.server_config = json.load(open(paths.Absolute.SERVER_CONFIG, 'r'))
         self.clients = {
             "memcached": {},
             "middleware": {},
@@ -20,7 +20,7 @@ class ClientManager(object):
         else:
             return SSHClient(
                 self.server_config[server_type][server_id],
-                open(paths.PRIVATE_KEY, 'r').read(),
+                open(paths.Absolute.PRIVATE_KEY, 'r').read(),
                 'ajilm')
 
     def get_or_create_client(self, server_type, server_id):
@@ -31,7 +31,7 @@ class ClientManager(object):
 
         return self.clients[server_type][server_id]
 
-    def exec(self, command, server_type, server_id, wait=True, retry=False):
+    def exec(self, command, server_type, server_id, wait=False, retry=False):
         try:
             client = self.get_or_create_client(server_type, server_id)
             if wait:

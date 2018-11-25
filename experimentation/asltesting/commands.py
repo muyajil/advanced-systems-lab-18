@@ -1,7 +1,6 @@
 from asltesting import paths
+import os
 
-# TODO: Commands to archive logs
-# TODO: Stop memcached
 
 class CommandManager(object):
 
@@ -10,25 +9,51 @@ class CommandManager(object):
 
     def get_memcached_run_command(self, server_id):
         if self.local:
-            return "docker-compose -f {} run -d memcached_{}".format(paths.MEMCACHED_YML, server_id)
+            return "docker-compose -f {} up -d memcached_{}".format(paths.Absolute.MEMCACHED_YML, server_id)
         else:
             return "sudo service memcached start"
 
-    def get_memcached_stop_command(self, server_id):
+    def get_memcached_stop_command(self):
         if self.local:
-            raise NotImplementedError
-            #return "docker-compose -f {} stop ".format(paths.MEMCACHED_YML, server_id)
+            return "docker-compose -f {} down".format(paths.Absolute.MEMCACHED_YML)
         else:
             return "sudo service memcached stop"
 
-    def get_memtier_run_command(self, server_id, ):
-        raise NotImplementedError
-
-    def get_middleware_run_command(self, server_id, sharded):
+    def get_memtier_run_command(self,
+                                memtier_server_id,
+                                middleware_server_id,
+                                threads,
+                                clients_per_thread,
+                                workload,
+                                log_dir,
+                                multi_get_key_size=1,
+                                internal_ip_middleware=None):
         if self.local:
-            if sharded:
-                return "ant -f {} runSharded{}".format(paths.BUILD_XML, server_id)
-            else:
-                return "ant -f {} run{}".format(paths.BUILD_XML, server_id)
+            return "docker run --rm -v {}:/output --net host redislabs/memtier_benchmark -s 127.0.0.1 -p 808{} -P memcache_text -c {} -t {} --test-time 90 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {} --multi-key-get={} --out-file=/output/{}.log".format(
+                log_dir,
+                middleware_server_id,
+                clients_per_thread,
+                threads,
+                workload,
+                multi_get_key_size,
+                memtier_server_id)
         else:
             raise NotImplementedError
+
+    def get_middleware_run_command(self, middleware_server_id, sharded, num_threads, log_dir, num_servers):
+        if self.local:
+            servers = ""
+            for server_id in range(1, num_servers+1):
+                servers += "127.0.0.1:1121{}".format(server_id)
+        else:
+            raise NotImplementedError
+
+        return "java -jar {} -l 0.0.0.0 -p 8081 -t {} -s {} -m {} -o {}".format(paths.Absolute.JAR_FILE, num_threads, sharded, servers, os.path.join(log_dir, str(middleware_server_id) + '.log'))
+
+    @staticmethod
+    def get_middleware_build_command():
+        return "ant -f {} jar".format(paths.Absolute.BUILD_XML)
+
+    @staticmethod
+    def get_middleware_stop_command():
+        return "if pgrep -f middleware-ajilm.jar; then pkill -SIGTERM -f middleware-ajilm.jar; fi"
