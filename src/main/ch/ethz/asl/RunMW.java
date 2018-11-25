@@ -11,6 +11,7 @@ public class RunMW {
 	static List<String> mcAddresses = null;
 	static int numThreadsPTP = -1;
 	static boolean readSharded = false;
+	static String logPath = null;
 
 	public static void main(String[] args) throws Exception {
 
@@ -23,7 +24,11 @@ public class RunMW {
 		// -----------------------------------------------------------------------------
 		// Start the Middleware
 		// -----------------------------------------------------------------------------
-		System.setProperty("csvLogFilename", "logs.csv");
+		if (logPath != null) {
+            System.setProperty("csvLogFilename", logPath);
+        } else {
+		    System.setProperty("csvLogFilename", "logs.csv");
+        }
 		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
 	}
 
@@ -91,12 +96,15 @@ public class RunMW {
 			System.exit(1);
 		}
 
+		if (params.get("o") != null)
+			logPath = params.get("o").get(0);
+
 	}
 
 	private static void printUsageWithError(String errorMessage) {
 		System.err.println();
 		System.err.println(
-				"Usage: -l <MyIP> -p <MyListenPort> -t <NumberOfThreadsInPool> -s <readSharded> -m <MemcachedIP:Port> <MemcachedIP2:Port2> ...");
+				"Usage: -l <MyIP> -p <MyListenPort> -t <NumberOfThreadsInPool> -s <readSharded> -o <logPath> -m <MemcachedIP:Port> <MemcachedIP2:Port2> ...");
 		if (errorMessage != null) {
 			System.err.println();
 			System.err.println("Error message: " + errorMessage);

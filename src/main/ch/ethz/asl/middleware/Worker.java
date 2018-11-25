@@ -28,7 +28,8 @@ public class Worker implements Runnable {
     public void run(){
         try {
             setupConnections(serverAddresses);
-            while (!Thread.interrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
+                System.out.println("Thread taking from queue");
                 MiddlewareRequest request = MiddlewareQueue.take();
                 request.dequeueNano = request.getRealTimestamp(System.nanoTime());
                 request.queueLength = MiddlewareQueue.getQueueLength();
@@ -59,8 +60,9 @@ public class Worker implements Runnable {
                 logger.trace(request.toString());
                 Clients.putConnection(request.connection);
             }
+            System.out.println("Thread out of while loop");
         } catch (InterruptedException e){
-
+            Thread.currentThread().interrupt();
         } catch(Exception e){
             logger.error("Worker " + this.id + " " + e);
             e.printStackTrace();

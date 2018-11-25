@@ -17,9 +17,7 @@ import ch.ethz.asl.middleware.MiddlewareQueue;
 
 public class Middleware implements Runnable{
 
-    private String ipAddress;
     private int listenPort;
-    private boolean readSharded;
     private List<Thread> workers;
     private int nextRequestId = 0;
     private static final Logger logger = LogManager.getLogger("Middleware");
@@ -32,9 +30,7 @@ public class Middleware implements Runnable{
         int numThreads,
         boolean readSharded
     ){
-        this.ipAddress = ipAddress;
         this.listenPort = port;
-        this.readSharded = readSharded;
         logger.trace(MiddlewareRequest.getHeader());
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownWorkers));
@@ -99,13 +95,17 @@ public class Middleware implements Runnable{
 
     private void shutdownWorkers(){
         for (Thread worker : this.workers){
+            worker.interrupt();
+        }
+
+        for (Thread worker : this.workers){
             try {
-                worker.interrupt();
                 worker.join();
-                isShutdown = true;
             } catch (InterruptedException e) {
                 logger.error(e);
+                Thread.currentThread().interrupt();
             }
         }
+        isShutdown = true;
     }
 }
