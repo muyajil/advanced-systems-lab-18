@@ -1,10 +1,11 @@
 Folder structure:
 
-tests/servers.json
-tests/memcached.yml
-tests/memtier.yml
-tests/id_rsa
-tests/id_rsa.pub
-tests/testname/config.json
-tests/testname/logs/timestamp or runID/iteration/middleware/i.csv
-tests/testname/logs/timestamp or runID/iteration/memtierlogs/i.log
+experimentation/servers.json
+experimentation/memcached.yml
+experimentation/memtier.yml
+experimentation/id_rsa
+experimentation/id_rsa.pub
+experimentation/tests/testname/config.json
+experimentation/tests/testname/timestamp or runID/logs/.../iteration/middleware/i.csv
+experimentation/tests/testname/timestamp or runID/logs/.../iteration/memtierlogs/i.log
+experimentation/tests/testname/timestamp or runId/plots/plot.png
