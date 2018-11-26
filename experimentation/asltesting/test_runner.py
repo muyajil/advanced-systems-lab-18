@@ -42,20 +42,23 @@ class TestRunner(object):
 
                             time.sleep(10)
 
-                            for memtier_id in range(1, run_configuration['num_client_machines']+1):
-                                for middleware_id in range(1, run_configuration['num_middlewares'] + 1):
-                                    command = self.command_manager.get_memtier_run_command(middleware_server_id=middleware_id,
-                                                                                           threads=run_configuration['num_threads_per_memtier'],
-                                                                                           clients_per_thread=num_clients_per_thread,
-                                                                                           workload=':'.join(workload),
-                                                                                           multi_get_key_size=multi_get_size,
-                                                                                           memtier_server_id=memtier_id,
-                                                                                           log_dir=os.path.join(base_log_dir, *[str(iteration), 'memtier'])) # TODO: include whole config in path, create log dir if not exists
-                                    self.client_manager.exec(command, 'memtier', memtier_id)
+                            # for memtier_id in range(1, run_configuration['num_client_machines']+1):
+                            #     for middleware_id in range(1, run_configuration['num_middlewares'] + 1):
+                            #         command = self.command_manager.get_memtier_run_command(middleware_server_id=middleware_id,
+                            #                                                                threads=run_configuration['num_threads_per_memtier'],
+                            #                                                                clients_per_thread=num_clients_per_thread,
+                            #                                                                workload=':'.join(workload),
+                            #                                                                multi_get_key_size=multi_get_size,
+                            #                                                                memtier_server_id=memtier_id,
+                            #                                                                log_dir=os.path.join(base_log_dir, *[str(iteration), 'memtier'])) # TODO: include whole config in path, create log dir if not exists
+                            #         self.client_manager.exec(command, 'memtier', memtier_id)
 
                             for middleware_id in range(1, run_configuration['num_middlewares']+1):
-                                command = self.command_manager.get_middleware_stop_command()
-                                self.client_manager.exec(command, 'middleware', middleware_id)
+                                print(self.client_manager.get_output('middleware', middleware_id))
+
+            for memcached_id in range(1, run_configuration['num_memcached_servers']+1):
+                command = self.command_manager.get_memcached_stop_command()
+                self.client_manager.exec(command=command, server_type='memcached', server_id=memcached_id, wait=True)
 
         finally:
             for memcached_id in range(1, run_configuration['num_memcached_servers']+1):
@@ -63,8 +66,7 @@ class TestRunner(object):
                 self.client_manager.exec(command=command, server_type='memcached', server_id=memcached_id, wait=True)
 
             for middleware_id in range(1, run_configuration['num_middlewares'] + 1):
-                command = self.command_manager.get_middleware_stop_command()
-                self.client_manager.exec(command, 'middleware', middleware_id, wait=True)
+                self.client_manager.terminate('middleware', middleware_id)
 
 
     def gather_logs(self):

@@ -4,6 +4,7 @@ import time
 import paramiko
 from io import StringIO
 from concurrent.futures import TimeoutError
+import shlex
 
 
 class Client(ABC):
@@ -23,11 +24,20 @@ class Client(ABC):
     def exec_and_forget(self, command):
         pass
 
+    @abstractmethod
+    def get_output(self):
+        pass
+
+    @abstractmethod
+    def terminate(self):
+        pass
+
 
 class BashClient(Client):
 
     def __init__(self):
         super().__init__()
+        self.p = None
         pass
 
     def exec_and_wait(self, command):
@@ -35,7 +45,21 @@ class BashClient(Client):
         return stdout
 
     def exec_and_forget(self, command):
-        subprocess.Popen(command, shell=True)
+        self.p = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE)
+
+    def terminate(self):
+        if self.p is None:
+            raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
+        else:
+            self.p.terminate()
+
+    def get_output(self):
+        if self.p is None:
+            raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
+        else:
+            self.terminate()
+            stdout, stderr = self.p.communicate()
+            return stdout.decode('utf-8')
 
     def close(self):
         pass
@@ -90,3 +114,10 @@ class SSHClient(Client):
         _, stdout, _ = self.client.exec_command("""sh -c 'ifconfig eth0 | grep "inet addr" | cut -d ":" -f 2 | cut -d " " -f 1'""")
         ip = stdout.readlines()[0].rstrip()
         return ip
+
+    def terminate(self):
+        #TODO save connection
+        pass
+
+    def get_output(self):
+        pass

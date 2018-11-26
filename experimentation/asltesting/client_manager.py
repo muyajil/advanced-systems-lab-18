@@ -47,6 +47,14 @@ class ClientManager(object):
 
                 self.exec(command, server_type, server_id, retry=True, wait=wait)
 
+    def get_output(self, server_type, server_id):
+        client = self.get_or_create_client(server_type, server_id)
+        return client.get_output()
+
+    def terminate(self, server_type, server_id):
+        client = self.get_or_create_client(server_type, server_id)
+        client.terminate()
+
     def close(self):
 
         for server_type in self.clients:
