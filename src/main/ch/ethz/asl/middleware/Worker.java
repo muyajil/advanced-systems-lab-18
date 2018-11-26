@@ -29,7 +29,6 @@ public class Worker implements Runnable {
         try {
             setupConnections(serverAddresses);
             while (!Thread.currentThread().isInterrupted()) {
-                System.out.println("Thread taking from queue");
                 MiddlewareRequest request = MiddlewareQueue.take();
                 request.dequeueNano = request.getRealTimestamp(System.nanoTime());
                 request.queueLength = MiddlewareQueue.getQueueLength();
