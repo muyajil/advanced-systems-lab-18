@@ -48,16 +48,13 @@ class BashClient(Client):
         self.p = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE)
 
     def terminate(self):
-        if self.p is None:
-            raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
-        else:
+        if self.p is not None:
             self.p.terminate()
 
     def get_output(self):
         if self.p is None:
             raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
         else:
-            self.terminate()
             stdout, stderr = self.p.communicate()
             return stdout.decode('utf-8')
 
@@ -116,8 +113,7 @@ class SSHClient(Client):
         return ip
 
     def terminate(self):
-        #TODO save connection
-        pass
+        raise NotImplementedError
 
     def get_output(self):
-        pass
+        raise NotImplementedError

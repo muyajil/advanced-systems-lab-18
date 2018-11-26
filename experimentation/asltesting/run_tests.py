@@ -25,6 +25,4 @@ if __name__ == '__main__':
     runner = TestRunner(3, args.local)
 
     for test_config in test_configs:
-        if not os.path.exists(test_config.log_dir):
-            os.makedirs(test_config.log_dir)
-        runner.run_test(test_config.config, test_config.log_dir)
+        runner.run_test(test_config.run_configuration, test_config.log_dir)

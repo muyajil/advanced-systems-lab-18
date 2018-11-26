@@ -6,6 +6,7 @@ experimentation/memtier.yml
 experimentation/id_rsa
 experimentation/id_rsa.pub
 experimentation/tests/testname/config.json
-experimentation/tests/testname/timestamp or runID/logs/.../iteration/middleware/i.csv
-experimentation/tests/testname/timestamp or runID/logs/.../iteration/memtierlogs/i.log
+experimentation/tests/testname/timestamp or runID/logs/threads per MW/clients per Thread/multi get size/workload/iteration/middleware/i.csv
+experimentation/tests/testname/timestamp or runID/logs/threads per MW/clients per Thread/multi get size/workload/iteration/memtierlogs/i.log
+experimentation/tests/testname/timestamp or runID/logs/threads per MW/clients per Thread/multi get size/workload/iteration/memtierlogs/i_clients_j-k-l.csv
 experimentation/tests/testname/timestamp or runId/plots/plot.png

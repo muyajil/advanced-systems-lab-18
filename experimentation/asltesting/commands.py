@@ -21,22 +21,28 @@ class CommandManager(object):
 
     def get_memtier_run_command(self,
                                 memtier_server_id,
-                                middleware_server_id,
                                 threads,
                                 clients_per_thread,
                                 workload,
                                 log_dir,
                                 multi_get_key_size=1,
+                                middleware_server_id=None,
+                                memcached_server_id=None,
                                 internal_ip_middleware=None):
         if self.local:
-            return "docker run --rm -v {}:/output --net host redislabs/memtier_benchmark -s 127.0.0.1 -p 808{} -P memcache_text -c {} -t {} --test-time 90 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {} --multi-key-get={} --out-file=/output/{}.log".format(
+            base_command = "docker run --rm -v {0}:/output --net host memtier_benchmark -s 127.0.0.1 -P memcache_text -c {1} -t {2} --test-time 90 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {3} --multi-key-get={4} --out-file=/output/{5}.log --client-stats=/output/{5}_clients ".format(
                 log_dir,
-                middleware_server_id,
                 clients_per_thread,
                 threads,
                 workload,
                 multi_get_key_size,
                 memtier_server_id)
+
+            if middleware_server_id is not None:
+
+                return base_command + "-p 808{}".format(middleware_server_id)
+            else:
+                return base_command + "-p 1121{}".format(memcached_server_id)
         else:
             raise NotImplementedError
 
