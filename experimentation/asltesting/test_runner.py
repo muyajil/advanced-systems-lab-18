@@ -49,12 +49,14 @@ class TestRunner(object):
                     for num_threads_per_mw in run_configuration['num_threads_per_mw_range']:
                         for num_clients_per_thread in run_configuration['num_clients_per_thread_range']:
 
+                            print('----------------------------------------------------------------')
                             print("\t\tRunning configuration:\n\t\tThreads per MW: {}\n\t\tClients per Thread: {}\n\t\tMultiGet Size: {}\n\t\tWorkload: {}".format(
                                 num_threads_per_mw,
                                 num_clients_per_thread,
                                 multi_get_size,
                                 ':'.join(map(lambda x: str(x), workload))
                             ))
+                            print('----------------------------------------------------------------')
 
                             middleware_log_dir, memtier_log_dir = self.setup_log_dirs(
                                 os.path.join(base_log_dir,
@@ -109,12 +111,14 @@ class TestRunner(object):
 
                             print('\t\tWaiting for memtier...')
                             for memtier_id in range(1, run_configuration['num_client_machines'] + 1):
-                                print(self.client_manager.get_output('memtier', memtier_id))
+                                output = self.client_manager.get_output('memtier', memtier_id)
+                                #print(output)
 
                             print('\t\tStopping middleware...')
                             for middleware_id in range(1, run_configuration['num_middlewares']+1):
                                 self.client_manager.terminate('middleware', middleware_id)
-                                print(self.client_manager.get_output('middleware', middleware_id))
+                                output = self.client_manager.get_output('middleware', middleware_id)
+                                #print(output)
 
         finally:
 
