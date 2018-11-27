@@ -1,10 +1,10 @@
 {
-    "name": "one_middleware",
+    "name": "one_server",
 
     "num_memcached_servers": 1,
 
-    "num_middlewares": 1,
-    "num_threads_per_mw_range": [8, 16, 32, 64],
+    "num_middlewares": 0,
+    "num_threads_per_mw_range": [0],
 
     "num_client_machines": 3,
     "num_memtier_per_client": 1,
