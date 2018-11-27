@@ -30,7 +30,7 @@ class CommandManager(object):
                                 memcached_server_id=None,
                                 internal_ip_middleware=None):
         if self.local:
-            base_command = "docker run --rm -v {0}:/output --net host memtier_benchmark -s 127.0.0.1 -P memcache_text -c {1} -t {2} --test-time 90 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {3} --multi-key-get={4} --out-file=/output/{5}.log --client-stats=/output/{5}_clients ".format(
+            base_command = "docker run --rm -v {0}:/output --net host memtier_benchmark -s 127.0.0.1 -P memcache_text -c {1} -t {2} --test-time 60 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {3} --multi-key-get={4} --out-file=/output/{5}.log --client-stats=/output/{5}_clients ".format(
                 log_dir,
                 clients_per_thread,
                 threads,
