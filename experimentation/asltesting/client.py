@@ -41,11 +41,11 @@ class BashClient(Client):
         pass
 
     def exec_and_wait(self, command):
-        stdout = subprocess.check_output(command, shell=True).decode('utf-8')
+        stdout = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE).decode('utf-8')
         return stdout
 
     def exec_and_forget(self, command):
-        self.p = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE)
+        self.p = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def terminate(self):
         if self.p is not None:
@@ -56,7 +56,8 @@ class BashClient(Client):
             raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
         else:
             stdout, stderr = self.p.communicate()
-            return stdout.decode('utf-8')
+            output = "STDOUT:\n{}\nSTDERR:\n{}".format(stdout.decode('utf-8'), stderr.decode('utf-8'))
+            return output
 
     def close(self):
         pass

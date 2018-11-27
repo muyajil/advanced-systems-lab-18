@@ -23,6 +23,6 @@ if __name__ == '__main__':
         test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id), os.listdir(paths.Absolute.TESTS)))
 
     runner = TestRunner(3, args.local)
-
+    # TODO: Save executed test_configs and allow continuation
     for test_config in test_configs:
         runner.run_test(test_config.run_configuration, test_config.log_dir)
