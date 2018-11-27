@@ -6,3 +6,5 @@ dist/*
 experimentation/.idea/*
 experimentation/tests/*/*/logs/
 */*/__pycache__/*
+*.pyc
+

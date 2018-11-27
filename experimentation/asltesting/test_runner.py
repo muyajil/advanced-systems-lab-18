@@ -44,10 +44,10 @@ class TestRunner(object):
 
     def run_single_test(self, iteration, run_configuration, base_log_dir):
         try:
-            for num_threads_per_mw in run_configuration['num_threads_per_mw_range']:
-                for num_clients_per_thread in run_configuration['num_clients_per_thread_range']:
-                    for multi_get_size in run_configuration['multi_get_size_range']:
-                        for workload in run_configuration['workloads']:
+            for workload in run_configuration['workloads']:
+                for multi_get_size in run_configuration['multi_get_size_range']:
+                    for num_threads_per_mw in run_configuration['num_threads_per_mw_range']:
+                        for num_clients_per_thread in run_configuration['num_clients_per_thread_range']:
 
                             print("\t\tRunning configuration:\n\t\tThreads per MW: {}\n\t\tClients per Thread: {}\n\t\tMultiGet Size: {}\n\t\tWorkload: {}".format(
                                 num_threads_per_mw,
@@ -75,7 +75,7 @@ class TestRunner(object):
                                                                                           num_servers=run_configuration['num_memcached_servers'])
                                 self.client_manager.exec(command=command, server_type='middleware', server_id=middleware_id)
 
-                            time.sleep(10)
+                            time.sleep(5)
 
                             print('\t\tStarting memtier...')
                             for memtier_id in range(1, run_configuration['num_client_machines']+1):
