@@ -1,0 +1,17 @@
+{
+    "name": "2k_3_1",
+
+    "num_memcached_servers": 3,
+
+    "num_middlewares": 1,
+    "num_threads_per_mw_range": [8, 32],
+
+    "num_client_machines": 3,
+    "num_memtier_per_client": 1,
+    "num_threads_per_memtier": 2,
+    "num_clients_per_thread_range": [32],
+
+    "sharded": false,
+
+    "workloads": [[1, 0], [0, 1]]
+}
