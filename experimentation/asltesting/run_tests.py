@@ -1,7 +1,7 @@
 import os
 import argparse
 from asltesting.test_configuration import TestConfiguration
-from asltesting.plotter import Plotter
+#from asltesting.plotter import Plotter
 from asltesting.test_runner import TestRunner
 from asltesting import paths
 import time
@@ -12,6 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_name', type=str, default=None)
     parser.add_argument('--local', action='store_true')
     parser.add_argument('--run_id', type=str, default=None)
+    parser.add_argument('--exclude ', nargs='+', type=str, default=[], dest='exclude')
     args = parser.parse_args()
 
     test_configs = []
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     if args.test_name is not None:
         test_configs = [TestConfiguration(args.test_name, run_id)]
     else:
-        test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id), os.listdir(paths.Absolute.TESTS)))
+        test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id), filter(lambda x: x not in args.exclude, sorted(os.listdir(paths.Absolute.TESTS)))))
 
     runner = TestRunner(3, args.local)
     # TODO: Save executed test_configs and allow continuation
