@@ -3,6 +3,8 @@ package ch.ethz.asl.middleware.utils;
 import ch.ethz.asl.middleware.utils.Connection;
 import java.util.*;
 
+import static java.lang.Math.min;
+
 public class MiddlewareRequest {
     public int workerId;
     public int requestId;
@@ -63,18 +65,18 @@ public class MiddlewareRequest {
         int minKeysPerShard = numKeys/numShards;
         int overflow = numKeys % numShards;
         int idx = 1;
-        for (int i = 0; i < numShards; i++){
+        for (int i = 0; i < min(numShards, numKeys); i++){
             StringBuilder command = new StringBuilder();
             command.append("get ");
             for (int j = 0; j < minKeysPerShard; j++){
                 command.append(commandElements[idx++]);
                 command.append(" ");
+            }
 
-                if (overflow > 0){
-                    command.append(commandElements[idx++]);
-                    command.append(" ");
-                    overflow--;
-                }
+            if (overflow > 0){
+                command.append(commandElements[idx++]);
+                command.append(" ");
+                overflow--;
             }
             command.append("\r\n");
             commands.add(command.toString());

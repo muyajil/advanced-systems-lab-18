@@ -63,11 +63,11 @@ class CommandManager(object):
         if self.local:
             servers = ""
             for server_id in range(1, num_servers+1):
-                servers += "127.0.0.1:1121{}".format(server_id)
+                servers += "127.0.0.1:1121{} ".format(server_id)
         else:
             raise NotImplementedError
 
-        return "java -jar {} -l 0.0.0.0 -p 8081 -t {} -s {} -m {} -o {}".format(paths.Absolute.JAR_FILE, num_threads, sharded, servers, os.path.join(log_dir, str(middleware_server_id) + '.log'))
+        return "java -jar {} -l 0.0.0.0 -p 808{} -t {} -s {} -m {}-o {}".format(paths.Absolute.JAR_FILE, middleware_server_id, num_threads, sharded, servers, os.path.join(log_dir, str(middleware_server_id) + '.log'))
 
     @staticmethod
     def get_middleware_build_command():

@@ -2,6 +2,7 @@ from asltesting.client_manager import ClientManager
 from asltesting.commands import CommandManager
 import os
 import time
+import datetime
 
 
 class TestRunner(object):
@@ -14,6 +15,7 @@ class TestRunner(object):
         self.current_config = 0
         self.num_configs = None
         self.run_configuration = None
+        self.init_time = time.time()
 
     def run_test(self, run_configuration, base_log_dir):
         try:
@@ -40,8 +42,10 @@ class TestRunner(object):
 
             self.stop_memcached_servers()
 
-        except Exception:
+        except Exception as e:
             self.stop_middleware()
+            raise e
+        finally:
             self.stop_memcached_servers()
 
     def run_single_test(self, iteration, run_configuration, base_log_dir):
@@ -83,6 +87,7 @@ class TestRunner(object):
                     self.stop_middleware()
 
                     print("\t\tTest took {} secs".format(int(time.time() - start)))
+                    print("\t\tTotal running time so far: {}".format(datetime.datetime.fromtimestamp(int(time.time() - self.init_time)).strftime('%H:%M:%S')))
 
     @staticmethod
     def setup_log_dirs(test_log_dir):

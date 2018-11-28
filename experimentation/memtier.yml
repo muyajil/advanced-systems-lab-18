@@ -50,6 +50,11 @@ mget60:
   net: "host"
   command: -s 127.0.0.1 -p 8081 -P memcache_text -c 16 -t 4 --test-time 60 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio 1:10 --multi-key-get=10
 
+mget2:
+  image: memtier_benchmark
+  net: "host"
+  command: -s 127.0.0.1 -p 8081 -P memcache_text -c 16 -t 4 --test-time 60 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio 1:2 --multi-key-get=2
+
 mget1:
   image: memtier_benchmark
   net: "host"

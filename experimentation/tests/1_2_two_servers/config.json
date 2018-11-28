@@ -1,5 +1,5 @@
 {
-    "name": "two_server",
+    "name": "two_servers",
 
     "num_memcached_servers": 2,
 

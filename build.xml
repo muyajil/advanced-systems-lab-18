@@ -72,7 +72,7 @@
             <arg line="logs.csv"/>
         </exec>
         <exec executable="docker-compose" failonerror="true">
-            <arg line="-f memcached.yml"/>
+            <arg line="-f experimentation/memcached.yml"/>
             <arg line="up -d"/>
         </exec>
         <java jar="${dist}/middleware-${nethzid}.jar" fork="true">

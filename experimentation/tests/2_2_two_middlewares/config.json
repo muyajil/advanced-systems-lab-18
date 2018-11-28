@@ -1,5 +1,5 @@
 {
-    "name": "one_middleware",
+    "name": "two_middlewares",
 
     "num_memcached_servers": 1,
 
