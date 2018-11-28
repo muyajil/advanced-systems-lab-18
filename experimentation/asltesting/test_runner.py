@@ -76,15 +76,13 @@ class TestRunner(object):
 
                     if run_configuration['num_middlewares'] > 0:
                         self.start_middleware(num_threads_per_mw, middleware_log_dir)
-
                         self.start_memtier_middleware(num_clients_per_thread, workload, memtier_log_dir)
+                        self.wait_for_memtier_middleware()
+                        self.stop_middleware()
 
                     else:
                         self.start_memtier_memcached(num_clients_per_thread, workload, memtier_log_dir)
-
-                    self.wait_for_memtier()
-
-                    self.stop_middleware()
+                        self.wait_for_memtier_memcached()
 
                     print("\t\tTest took {} secs".format(int(time.time() - start)))
                     print("\t\tTotal running time so far: {:.2f}h".format((int(time.time() - self.init_time)/3600)))
@@ -145,41 +143,60 @@ class TestRunner(object):
 
     def start_memtier_middleware(self, num_clients_per_thread, workload, memtier_log_dir):
         print('\t\tStarting memtier...')
-        for memtier_id in range(1, self.run_configuration['num_client_machines'] + 1):
+        memtier_id = 1
+        for _ in range(1, self.run_configuration['num_client_machines'] + 1):
             for middleware_id in range(1, self.run_configuration['num_middlewares'] + 1):
-                command = self.command_manager.get_memtier_run_command(
-                    middleware_server_id=middleware_id,
-                    threads=self.run_configuration['num_threads_per_memtier'],
-                    clients_per_thread=num_clients_per_thread,
-                    workload=':'.join(map(lambda x: str(x), workload)),
-                    multi_get_key_size=workload[1],
-                    memtier_server_id=memtier_id,
-                    log_dir=memtier_log_dir)
-
-                self.client_manager.exec(command, 'memtier', memtier_id)
+                self.start_memtier(num_clients_per_thread,
+                                   workload,
+                                   memtier_log_dir,
+                                   memtier_id,
+                                   middleware_id)
+                memtier_id += 1
 
     def start_memtier_memcached(self, num_clients_per_thread, workload, memtier_log_dir):
         print('\t\tStarting memtier...')
-        for memtier_id in range(1, self.run_configuration['num_client_machines'] + 1):
+        memtier_id = 1
+        for _ in range(1, self.run_configuration['num_client_machines'] + 1):
             for memcached_id in range(1, self.run_configuration['num_memcached_servers'] + 1):
-                command = self.command_manager.get_memtier_run_command(
-                    memcached_server_id=memcached_id,
-                    threads=self.run_configuration['num_threads_per_memtier'],
-                    clients_per_thread=num_clients_per_thread,
-                    workload=':'.join(map(lambda x: str(x), workload)),
-                    multi_get_key_size=workload[1],
-                    memtier_server_id=memtier_id,
-                    log_dir=memtier_log_dir)
-                self.client_manager.exec(command, 'memtier', memtier_id)
+                self.start_memtier(num_clients_per_thread,
+                                   workload,
+                                   memtier_log_dir,
+                                   memtier_id,
+                                   memcached_id)
+                memtier_id += 1
 
-    def wait_for_memtier(self):
-        # TODO: if multiple commands on same machine we cant get the output
+    def start_memtier(self, num_clients_per_thread, workload, memtier_log_dir, memtier_id, server_id):
+        command = self.command_manager.get_memtier_run_command(
+            memcached_server_id=server_id,
+            threads=self.run_configuration['num_threads_per_memtier'],
+            clients_per_thread=num_clients_per_thread,
+            workload=':'.join(map(lambda x: str(x), workload)),
+            multi_get_key_size=workload[1],
+            memtier_server_id=memtier_id,
+            log_dir=memtier_log_dir)
+        self.client_manager.exec(command, 'memtier', memtier_id)
+
+    def wait_for_memtier_middleware(self):
         print('\t\tWaiting for memtier...')
-        for memtier_id in range(1, self.run_configuration['num_client_machines'] + 1):
-            output = self.client_manager.get_output('memtier', memtier_id)
-            lines = output.split('\n')
-            performance_lines = lines[6].split('\r')
-            print('\t\t' + performance_lines[-2])
+        memtier_id = 1
+        for _ in range(1, self.run_configuration['num_client_machines'] + 1):
+            for _ in range(1, self.run_configuration['num_middlewares'] + 1):
+                self.wait_for_memtier(memtier_id)
+                memtier_id += 1
+
+    def wait_for_memtier_memcached(self):
+        print('\t\tWaiting for memtier...')
+        memtier_id = 1
+        for _ in range(1, self.run_configuration['num_client_machines'] + 1):
+            for _ in range(1, self.run_configuration['num_memcached_servers'] + 1):
+                self.wait_for_memtier(memtier_id)
+                memtier_id += 1
+
+    def wait_for_memtier(self, memtier_id):
+        output = self.client_manager.get_output('memtier', memtier_id)
+        lines = output.split('\n')
+        performance_lines = lines[6].split('\r')
+        print('\t\t' + performance_lines[-2])
 
     def gather_logs(self):
         raise NotImplementedError
