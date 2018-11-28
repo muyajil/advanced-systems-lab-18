@@ -29,19 +29,21 @@ class CommandManager(object):
                                 middleware_server_id=None,
                                 memcached_server_id=None,
                                 internal_ip_middleware=None,
-                                internal_ip_memcached=None):
+                                internal_ip_memcached=None,
+                                duration=60):
 
         if self.local:
             command_prefix = "docker run --rm -v {}:/output --net host memtier_benchmark ".format(log_dir)
         else:
             command_prefix = "memtier_benchmark"
 
-        command_options = "-P memcache_text -c {0} -t {1} --test-time 60 --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {2} --out-file=/output/{3}.log --client-stats=/output/{3}_{4}_clients ".format(
+        command_options = "-P memcache_text -c {0} -t {1} --test-time {5} --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {2} --out-file=/output/{3}.log --client-stats=/output/{3}_{4}_clients ".format(
                 clients_per_thread,
                 threads,
                 workload,
                 memtier_server_id,
-                middleware_server_id if middleware_server_id is not None else memcached_server_id)
+                middleware_server_id if middleware_server_id is not None else memcached_server_id,
+                duration)
 
         if self.local:
 

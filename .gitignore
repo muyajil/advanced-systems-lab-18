@@ -8,3 +8,4 @@ experimentation/tests/*/*/logs/
 */*/__pycache__/*
 *.pyc
 experimentation/tests/archive/*
+experimentation/fill/*
