@@ -87,7 +87,7 @@ class TestRunner(object):
                     self.stop_middleware()
 
                     print("\t\tTest took {} secs".format(int(time.time() - start)))
-                    print("\t\tTotal running time so far: {:.2f}".format((int(time.time() - self.init_time)/3600)))
+                    print("\t\tTotal running time so far: {:.2f}h".format((int(time.time() - self.init_time)/3600)))
 
     @staticmethod
     def setup_log_dirs(test_log_dir):
