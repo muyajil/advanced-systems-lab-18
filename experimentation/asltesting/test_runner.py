@@ -40,7 +40,7 @@ class TestRunner(object):
 
             self.stop_memcached_servers()
 
-        finally:
+        except Exception:
             self.stop_middleware()
             self.stop_memcached_servers()
 
