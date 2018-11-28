@@ -160,15 +160,14 @@ class TestRunner(object):
                                                                        workload="1:0",
                                                                        log_dir=os.path.abspath('./fill/memtier'),
                                                                        memtier_server_id=1,
-                                                                       duration=180)
-        print(memtier_command)
+                                                                       duration=300)
         self.client_manager.exec(memtier_command, 'memtier', 1)
         output = self.client_manager.get_output('memtier', 1)
-        print(output)
+        # print(output)
 
         self.client_manager.terminate('middleware', 1)
         output = self.client_manager.get_output('middleware', 1)
-        print(output)
+        # print(output)
 
     def start_memtier_middleware(self, num_clients_per_thread, workload, memtier_log_dir):
         print('\t\tStarting memtier...')

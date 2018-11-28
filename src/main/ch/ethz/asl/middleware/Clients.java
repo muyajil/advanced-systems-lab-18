@@ -16,11 +16,11 @@ public class Clients{
         connectionManager.addConnection(connection);
     }
 
-    public static void putConnection(Connection connection) throws IOException{
+    public static void putConnection(Connection connection){
         connectionManager.putConnection(connection);
     }
 
-    public static Connection popConnection() throws IOException{
+    public static Connection popConnection(){
         return connectionManager.popConnection();
     } 
 }
