@@ -30,7 +30,7 @@ class CommandManager(object):
                                 memcached_server_id=None,
                                 internal_ip_middleware=None,
                                 internal_ip_memcached=None,
-                                duration=60):
+                                duration=80):
 
         if self.local:
             command_prefix = "docker run --rm -v {}:/output --net host memtier_benchmark ".format(log_dir)
