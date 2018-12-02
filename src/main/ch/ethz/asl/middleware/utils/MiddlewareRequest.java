@@ -16,13 +16,15 @@ public class MiddlewareRequest {
     public int multiGetSize;
     public boolean isSuccessful;
     public int numKeysReturned;
-    public long enqueueMilli;
     public long enqueueNano;
     public long dequeueNano;
     public int queueLength;
     public long sentToServerNano;
     public long receivedFromServerNano;
     public long returnedToClientNano;
+
+    public static long serverStartMilli;
+    public static long serverStartNano;
 
     public void parse(int numServers, boolean readSharded){
         String command = commands.get(0);
@@ -115,8 +117,9 @@ public class MiddlewareRequest {
 
     }
 
-    public long getRealTimestamp(long nano){
-        return (nano - enqueueNano) + enqueueMilli*1000;
+    public static long getRealTimestamp(long nano){
+        long elapsedTimeSinceServerStart = nano - serverStartNano;
+        return elapsedTimeSinceServerStart + serverStartMilli*1000000;
     }
 
     public static String getHeader(){

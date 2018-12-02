@@ -32,6 +32,8 @@ public class Middleware implements Runnable{
     ){
         this.listenPort = port;
         logger.trace(MiddlewareRequest.getHeader());
+        MiddlewareRequest.serverStartMilli = System.currentTimeMillis();
+        MiddlewareRequest.serverStartNano = System.nanoTime();
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownWorkers));
         this.workers = getRunningWorkers(numThreads, mcAddresses, readSharded);
@@ -59,8 +61,7 @@ public class Middleware implements Runnable{
                             }};
                             requestId = nextRequestId;
                             clientId = client.Id;
-                            enqueueMilli = System.currentTimeMillis();
-                            enqueueNano = System.nanoTime();
+                            enqueueNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
                         }});
                         nextRequestId++;
                     } else {
