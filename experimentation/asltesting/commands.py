@@ -75,6 +75,3 @@ class CommandManager(object):
     def get_middleware_build_command():
         return "ant -f {} jar".format(paths.Absolute.BUILD_XML)
 
-    @staticmethod
-    def get_middleware_stop_command():
-        return "if pgrep -f middleware-ajilm.jar; then pkill -SIGTERM -f middleware-ajilm.jar; fi"

@@ -18,7 +18,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     test_configs = []
-    run_id = args.run_id if args.run_id is not None else int(time.time())
+    run_id = args.run_id if args.run_id is not None else str(int(time.time()))
 
     if len(args.test_names) > 0:
         test_configs = map(lambda test_name: TestConfiguration(test_name, run_id), args.test_names)
