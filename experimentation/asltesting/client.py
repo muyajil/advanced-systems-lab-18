@@ -32,6 +32,10 @@ class Client(ABC):
     def terminate(self):
         pass
 
+    @abstractmethod
+    def get_internal_ip(self):
+        pass
+
 
 class BashClient(Client):
 
@@ -62,11 +66,17 @@ class BashClient(Client):
     def close(self):
         pass
 
+    def get_internal_ip(self):
+        return None
+
 
 class SSHClient(Client):
 
     def __init__(self, host, key, username):
         self.client = self.get_ssh_client(host, key, username)
+        self.stdin = None
+        self.stdout = None
+        self.stderr = None
         super().__init__()
 
     @staticmethod
@@ -99,7 +109,8 @@ class SSHClient(Client):
             return stdout.read().decode('utf-8')
 
     def exec_and_forget(self, command):
-        _, stdout, stderr = self.client.exec_command(command)
+        stdin, stdout, stderr = self.client.exec_command(command)
+        self.stdin = stdin
         time.sleep(1)
         if stdout.channel.exit_status_ready():
             stdout.channel.close()
@@ -114,7 +125,14 @@ class SSHClient(Client):
         return ip
 
     def terminate(self):
-        raise NotImplementedError
+        if self.stdin is None:
+            raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
+        else:
+            self.stdin.write('\x03')
 
     def get_output(self):
-        raise NotImplementedError
+        if self.stdin is None:
+            raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
+        else:
+            output = "STDOUT:\n{}\nSTDERR:\n{}".format(self.stdout.read().decode('utf-8'), self.stderr.read().decode('utf-8'))
+            return output

@@ -1,7 +1,7 @@
 import os
 import argparse
 from asltesting.test_configuration import TestConfiguration
-from asltesting.plotter import Plotter
+from asltesting.plotter import MiddlewarePlotter, MemtierPlotter
 from asltesting.test_runner import TestRunner
 from asltesting import paths
 import time
@@ -26,9 +26,12 @@ if __name__ == '__main__':
         test_configs = map(lambda test_name: TestConfiguration(test_name, run_id), filter(lambda x: x not in args.exclude, sorted(os.listdir(paths.Absolute.TESTS))))
 
     if args.plot:
-        plotter = Plotter(args.repetitions)
+        mw_plotter = MiddlewarePlotter()
+        mt_plotter = MemtierPlotter()
         for test_config in test_configs:
-            plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
+            mt_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
+            if test_config.run_configuration['num_threads_per_mw_range'][0] > 0:
+                mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
     else:
         runner = TestRunner(args.repetitions, args.local)
         for test_config in test_configs:
