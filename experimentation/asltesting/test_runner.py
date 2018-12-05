@@ -154,17 +154,16 @@ class TestRunner(object):
             self.client_manager.exec(command=command, server_type='memcached', server_id=memcached_id, wait=True)
 
     def warm_up_caches(self):
+        fill_dir = paths.Absolute.FILL_LOGS if self.local else paths.Relative.FILL_LOGS
         print('\tWarming up caches...')
-        if not os.path.exists(paths.Relative.FILL_LOGS):
-            os.makedirs(paths.Relative.FILL_LOGS)
-        if not os.path.exists(paths.Relative.FILL_LOGS):
-            os.makedirs(paths.Relative.FILL_LOGS)
+        if not os.path.exists(fill_dir):
+            os.makedirs(fill_dir)
 
         middleware_command = self.command_manager.get_middleware_run_command(
             middleware_server_id=1,
             sharded=False,
             num_threads=64,
-            log_dir=paths.Relative.FILL_LOGS,
+            log_dir=fill_dir,
             num_servers=self.run_configuration['num_memcached_servers'],
             memcached_ips=self.get_memcached_ips())
         self.client_manager.exec(middleware_command, 'middleware', 1)
@@ -174,7 +173,7 @@ class TestRunner(object):
                                                                        threads=2,
                                                                        clients_per_thread=32,
                                                                        workload="1:0",
-                                                                       log_dir=os.path.abspath(paths.Relative.FILL_LOGS),
+                                                                       log_dir=os.path.abspath(fill_dir),
                                                                        memtier_server_id=1,
                                                                        duration=300)
         self.client_manager.exec(memtier_command, 'memtier', 1)

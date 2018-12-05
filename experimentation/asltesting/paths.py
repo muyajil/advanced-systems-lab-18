@@ -8,6 +8,7 @@ class Absolute(object):
     CURRENT_TESTS = '/home/muy/repositories/asl18/experimentation/tests/current'
     BUILD_XML = '/home/muy/repositories/asl18/build.xml'
     JAR_FILE = '/home/muy/repositories/asl18/dist/middleware-ajilm.jar'
+    FILL_LOGS = '/home/muy/repositories/asl18/fill/'
 
 
 class Relative(object):
