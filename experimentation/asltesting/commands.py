@@ -53,21 +53,28 @@ class CommandManager(object):
                 command_options += "-p 808{} ".format(middleware_server_id)
             else:
                 command_options += "-p 1121{} ".format(memcached_server_id)
-
-            if multi_get_key_size > 0:
-                command_options += "--multi-key-get={}".format(multi_get_key_size)
-
-            return command_prefix + command_options
         else:
-            raise NotImplementedError
 
-    def get_middleware_run_command(self, middleware_server_id, sharded, num_threads, log_dir, num_servers):
+            if internal_ip_middleware is not None:
+                command_options += "-s {} ".format(internal_ip_middleware)
+                command_options += "-p 8081 ".format(middleware_server_id)
+            else:
+                command_options += "-s {} ".format(internal_ip_memcached)
+                command_options += "-p 11211"
+
+        if multi_get_key_size > 0:
+            command_options += "--multi-key-get={}".format(multi_get_key_size)
+
+        return command_prefix + command_options
+
+    def get_middleware_run_command(self, middleware_server_id, sharded, num_threads, log_dir, num_servers, memcached_ips):
+        servers = ""
         if self.local:
-            servers = ""
             for server_id in range(1, num_servers+1):
                 servers += "127.0.0.1:1121{} ".format(server_id)
         else:
-            raise NotImplementedError
+            for server in memcached_ips:
+                servers += "{}:11211 ".format(server)
 
         return "java -jar {} -l 0.0.0.0 -p 808{} -t {} -s {} -m {}-o {}".format(paths.Absolute.JAR_FILE, middleware_server_id, num_threads, sharded, servers, os.path.join(log_dir, str(middleware_server_id) + '.log'))
 

@@ -21,11 +21,16 @@ class Analyzer(ABC):
     def get_performance(df, op_key):
         raise NotImplementedError()
 
+    @staticmethod
+    @abstractmethod
+    def get_dataframe(log_dir):
+        raise NotImplementedError()
+
 
 class MemtierAnalyzer(Analyzer):
 
     @staticmethod
-    def get_datapoint(log_dir, num_clients):
+    def get_dataframe(log_dir):
         repetitions = glob(log_dir + '/*/')
 
         dfs = []
@@ -33,7 +38,6 @@ class MemtierAnalyzer(Analyzer):
         for rep_id, repetition in enumerate(repetitions):
             client_stats_files = glob(repetition + '/memtier/*clients*')
             for client_id, client_stats_file in enumerate(client_stats_files):
-
                 temp_df = pd.read_csv(client_stats_file, header=1).dropna().astype(float)
                 temp_df = temp_df[temp_df.Second > 10]
                 temp_df = temp_df[temp_df.Second < len(temp_df) - 10]
@@ -42,6 +46,11 @@ class MemtierAnalyzer(Analyzer):
                 dfs.append(temp_df)
 
         df = pd.concat(dfs)
+        return df
+
+    @staticmethod
+    def get_datapoint(log_dir, num_clients):
+        df = MemtierAnalyzer.get_dataframe(log_dir)
         set_df = df[df['SET Requests'] > 0]
         get_df = df[df['GET Requests'] > 0]
         (avg_set_rt_ms,
@@ -98,7 +107,7 @@ class MemtierAnalyzer(Analyzer):
     def get_performance(df, op_key):
 
         if df.empty:
-            return 0, 0, 0, 0
+            return 0, 0, 0, 0, 0, 0, 0, 0, 0
 
         avg_rt_ms = (df[op_key + ' Average Latency'] * 1000).mean()
         rt_ms_25 = (df[op_key + ' Average Latency'] * 1000).quantile(0.25)
@@ -123,11 +132,10 @@ class MemtierAnalyzer(Analyzer):
 
         return avg_rt_ms, rt_ms_25, rt_ms_50, rt_ms_75, rt_ms_90, rt_ms_99, conf_rt_ms, avg_tp_s, conf_tp_s
 
-
 class MiddlewareAnalyzer(Analyzer):
 
     @staticmethod
-    def get_datapoint(log_dir, num_clients):
+    def get_dataframe(log_dir):
         repetitions = glob(log_dir + "/*/")
 
         dfs = []
@@ -147,6 +155,11 @@ class MiddlewareAnalyzer(Analyzer):
                 uptimes.append((server_stop - server_start) / 1e9)
 
         df = pd.concat(dfs)
+        return df, uptimes
+
+    @staticmethod
+    def get_datapoint(log_dir, num_clients):
+        df, uptimes = MiddlewareAnalyzer.get_dataframe(log_dir)
 
         s_bins = np.mean(uptimes)
 
@@ -219,7 +232,7 @@ class MiddlewareAnalyzer(Analyzer):
     def get_performance(df, seconds_bins):
 
         if df.empty:
-            return 0, 0, 0, 0, 0
+            return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
         df['ResponseTimeMilli'] = (df['ReturnedToClientNano'] - df['EnqueueNano']) / 1e6
         avg_rt_ms = df['ResponseTimeMilli'].mean()

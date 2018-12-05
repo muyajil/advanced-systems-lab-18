@@ -3,8 +3,12 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from abc import ABC, abstractmethod
 from asltesting.analyzer import MiddlewareAnalyzer, MemtierAnalyzer
+from asltesting.image import merge_images
+from glob import glob
 
 # TODO: save processed data!
+# TODO: Histogram
+# TODO: Add Server Type to plot title
 YLABELS = {
     "set_tp_s": "Ops/Sec",
     "get_tp_s": "Ops/Sec",
@@ -20,9 +24,29 @@ TITLES = {
     "get_tp_s": "GET Throughput",
     "set_rt_ms": "SET Response Time",
     "get_rt_ms": "GET Response Time",
-    "interactive_set_rt_ms": "SET Response Time Interactive Law",
-    "interactive_get_rt_ms": "GET Response Time Interactive Law",
+    "interactive_set_rt_ms": "SET Response Time (Interactive Law)",
+    "interactive_get_rt_ms": "GET Response Time (Interactive Law)",
     "queue_length": "Queue Length"
+}
+
+SERVER_TYPE = {
+    "set_tp_s": True,
+    "get_tp_s": True,
+    "set_rt_ms": True,
+    "get_rt_ms": True,
+    "interactive_set_rt_ms": False,
+    "interactive_get_rt_ms": False,
+    "queue_length": False
+}
+
+YLIMS = {
+    "set_tp_s": 17000,
+    "get_tp_s": 17000,
+    "set_rt_ms": 30,
+    "get_rt_ms": 30,
+    "interactive_set_rt_ms": 30,
+    "interactive_get_rt_ms": 30,
+    "queue_length": 500
 }
 
 
@@ -43,6 +67,11 @@ class Plotter(ABC):
     def get_plot_types():
         raise NotImplementedError()
 
+    @staticmethod
+    @abstractmethod
+    def get_response_times(log_dir):
+        raise NotImplementedError()
+
     def get_plot_dataframes(self, run_configuration, base_log_dir, num_threads_per_mw, workload):
         dfs = []
         for num_clients_per_thread in run_configuration['num_clients_per_thread_range']:
@@ -59,17 +88,23 @@ class Plotter(ABC):
 
         return dfs
 
+    def generate_histogram(self, df, plot_dir, x_label):
+        # TODO: Implement Histogram
+        pass
+
     def generate_plot(self, type, plot_data, plot_dir, x_label):
         plt.clf()
         plt.xlabel(x_label)
         plt.ylabel(YLABELS[type])
-        plt.title(TITLES[type])
+        title = TITLES[type]
+        if SERVER_TYPE[type]:
+            title += " ({})".format(self.get_server_type().capitalize())
+        plt.title(title)
         plt.grid(True)
         plotted = False
         if len(plot_data.keys()) > 1:
             for mw_threads in plot_data:
                 df = plot_data[mw_threads]
-
                 if not df['avg_' + type].mean() == 0.0:
                     plotted = True
                     plt.errorbar(df.index.values,
@@ -86,16 +121,16 @@ class Plotter(ABC):
             df = plot_data[mw_threads]
             if not df['avg_' + type].mean() == 0.0:
                 plotted = True
-                plt.errorbar(df.index.values,
-                             df['avg_' + type],
-                             marker='x',
-                             ls=':',
-                             yerr=df['conf_' + type],
-                             label="Average Response Time",
-                             elinewidth=1.0,
-                             capsize=3.0)
 
                 if type in {'set_rt_ms', 'get_rt_ms'}:
+                    plt.errorbar(df.index.values,
+                                 df['avg_' + type],
+                                 marker='x',
+                                 ls=':',
+                                 yerr=df['conf_' + type],
+                                 label="Average Response Time",
+                                 elinewidth=1.0,
+                                 capsize=3.0)
                     for percentile in percentiles:
                         plt.errorbar(df.index.values,
                                      df[type + '_' + str(percentile)],
@@ -105,10 +140,19 @@ class Plotter(ABC):
                                      label="{}th Percentile".format(percentile),
                                      elinewidth=1.0,
                                      capsize=3.0)
+                else:
+                    plt.errorbar(df.index.values,
+                                 df['avg_' + type],
+                                 marker='x',
+                                 ls=':',
+                                 yerr=df['conf_' + type],
+                                 label="{} Middleware Threads".format(mw_threads),
+                                 elinewidth=1.0,
+                                 capsize=3.0)
 
         if plotted:
             plt.legend()
-            plt.ylim(bottom=0)
+            plt.ylim(bottom=0, top=YLIMS[type])
             path = os.path.join(plot_dir, self.get_server_type() + '_' + type + '.png')
             plt.savefig(path)
             print("Generated plot {}".format(path))
@@ -122,6 +166,9 @@ class Plotter(ABC):
         for plot_type in plot_types:
             self.generate_plot(plot_type, plot_data, plot_dir, x_label)
 
+        plot_files = glob(plot_dir + '/*')
+        merge_images(sorted(plot_files), os.path.join(plot_dir, 'all.png'))
+
     def plot_workload_range(self, run_configuration, base_log_dir, plot_dir, num_threads_per_mw):
         dfs = []
         plot_data = dict()
@@ -130,7 +177,9 @@ class Plotter(ABC):
             df = self.get_plot_dataframes(run_configuration, base_log_dir, num_threads_per_mw, workload)[0]
             df['workload'] = workload_str
             dfs.append(df)
+            #self.generate_histogram(self.get_response_times())
         plot_data[num_threads_per_mw] = pd.concat(dfs).set_index('workload')
+        # TODO: Call self.generate_histogram
         self.generate_plots(plot_data, os.path.join(plot_dir, str(num_threads_per_mw)), "Workload")
 
     def plot_thread_range(self, run_configuration, base_log_dir, plot_dir, workload):
@@ -154,6 +203,11 @@ class Plotter(ABC):
 class MiddlewarePlotter(Plotter):
 
     @staticmethod
+    def get_response_times(log_dir):
+        df = MiddlewareAnalyzer.get_dataframe(log_dir)
+        return df['ResponseTimeMilli']
+
+    @staticmethod
     def get_datapoint(log_dir, total_clients):
         return pd.DataFrame.from_dict(MiddlewareAnalyzer.get_datapoint(log_dir, total_clients))
 
@@ -167,6 +221,11 @@ class MiddlewarePlotter(Plotter):
 
 
 class MemtierPlotter(Plotter):
+
+    @staticmethod
+    def get_response_times(log_dir):
+        df = MemtierAnalyzer.get_dataframe(log_dir)
+        return df['ResponseTimeMilli']
 
     @staticmethod
     def get_datapoint(log_dir, total_clients):

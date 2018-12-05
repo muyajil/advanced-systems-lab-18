@@ -30,7 +30,7 @@ public class Worker implements Runnable {
             setupConnections(serverAddresses);
             while (!Thread.currentThread().isInterrupted()) {
                 MiddlewareRequest request = MiddlewareQueue.take();
-                request.dequeueNano = request.getRealTimestamp(System.nanoTime());
+                request.dequeueNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
                 request.queueLength = MiddlewareQueue.getQueueLength();
                 request.workerId = this.id;
 
@@ -53,7 +53,7 @@ public class Worker implements Runnable {
                 }
 
                 request.connection.write(response);
-                request.returnedToClientNano = request.getRealTimestamp(System.nanoTime());
+                request.returnedToClientNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
                 // Finished processing request therefore we print it and give the connection back into the client pool
                 logger.trace(request.toString());
@@ -78,7 +78,7 @@ public class Worker implements Runnable {
             servers.putConnection(server);
         }
 
-        request.sentToServerNano = request.getRealTimestamp(System.nanoTime());
+        request.sentToServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
         // gather responses
         String[] responses = new String[numServers];
@@ -88,7 +88,7 @@ public class Worker implements Runnable {
             servers.putConnection(server);
         }
 
-        request.receivedFromServerNano = request.getRealTimestamp(System.nanoTime());
+        request.receivedFromServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
 
         // parse responses
@@ -112,11 +112,11 @@ public class Worker implements Runnable {
         server.write(request.commands.get(0));
 
         request.serverId = server.Id;
-        request.sentToServerNano = request.getRealTimestamp(System.nanoTime());
+        request.sentToServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
         String response = server.read();
 
-        request.receivedFromServerNano = request.getRealTimestamp(System.nanoTime());
+        request.receivedFromServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
         request.isSuccessful = !response.equals("END\r\n");
         request.numKeysReturned = request.isSuccessful ? 1 : 0;
@@ -138,7 +138,7 @@ public class Worker implements Runnable {
             tempConnectionHolder.add(server);
         }
 
-        request.sentToServerNano = request.getRealTimestamp(System.nanoTime());
+        request.sentToServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
         // gather responses
         String[] responses = new String[request.commands.size()];
@@ -148,7 +148,7 @@ public class Worker implements Runnable {
             servers.putConnection(server);
         }
 
-        request.receivedFromServerNano = request.getRealTimestamp(System.nanoTime());
+        request.receivedFromServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
         // parse responses
         StringBuilder stringBuilder = new StringBuilder();

@@ -9,9 +9,9 @@
     "num_client_machines": 3,
     "num_memtier_per_client": 2,
     "num_threads_per_memtier": 1,
-    "num_clients_per_thread_range": [1, 2, 4, 8, 16, 32],
+    "num_clients_per_thread_range": [2],
 
     "sharded": false,
 
-    "workloads": [[1, 1], [1, 2], [1, 3],[1, 4], [1, 5], [1, 6],[1, 7], [1, 8], [1, 9]]
+    "workloads": [[1, 1], [1, 3], [1, 6], [1, 9], [1, 12]]
 }
