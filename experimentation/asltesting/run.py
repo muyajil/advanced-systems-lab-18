@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--exclude ', nargs='+', type=str, default=[], dest='exclude')
     parser.add_argument('--plot', action='store_true')
     parser.add_argument('--repetitions', type=int, default=3)
-    parser.add_argument('--install', type=str, action='store_true')
+    parser.add_argument('--install', action='store_true')
     args = parser.parse_args()
 
     test_configs = []

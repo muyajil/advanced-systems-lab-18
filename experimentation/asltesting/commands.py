@@ -69,6 +69,7 @@ class CommandManager(object):
 
     def get_middleware_run_command(self, middleware_server_id, sharded, num_threads, log_dir, num_servers, memcached_ips):
         servers = ""
+        jar_path = paths.Absolute.JAR_FILE if self.local else paths.Relative.JAR_FILE
         if self.local:
             for server_id in range(1, num_servers+1):
                 servers += "127.0.0.1:1121{} ".format(server_id)
@@ -76,9 +77,11 @@ class CommandManager(object):
             for server in memcached_ips:
                 servers += "{}:11211 ".format(server)
 
-        return "java -jar {} -l 0.0.0.0 -p 808{} -t {} -s {} -m {}-o {}".format(paths.Absolute.JAR_FILE, middleware_server_id, num_threads, sharded, servers, os.path.join(log_dir, str(middleware_server_id) + '.log'))
+        return "java -jar {} -l 0.0.0.0 -p 808{} -t {} -s {} -m {}-o {}".format(jar_path, middleware_server_id, num_threads, sharded, servers, os.path.join(log_dir, str(middleware_server_id) + '.log'))
 
-    @staticmethod
-    def get_middleware_build_command():
-        return "ant -f {} jar".format(paths.Absolute.BUILD_XML)
+    def get_middleware_build_command(self):
+        if self.local:
+            return "ant -f {} jar".format(paths.Absolute.BUILD_XML)
+        else:
+            return "ant -f {} jar".format(paths.Relative.BUILD_XML)
 

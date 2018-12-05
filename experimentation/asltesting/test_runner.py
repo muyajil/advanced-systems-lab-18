@@ -126,7 +126,7 @@ class TestRunner(object):
             command = self.command_manager.get_middleware_run_command(
                 sharded=self.run_configuration['sharded'],
                 num_threads=num_threads_per_mw,
-                log_dir=middleware_log_dir if self.local else paths.Absolute.REMOTE_LOGS,
+                log_dir=middleware_log_dir if self.local else paths.Relative.REMOTE_LOGS,
                 middleware_server_id=middleware_id,
                 num_servers=self.run_configuration['num_memcached_servers'],
                 memcached_ips=self.get_memcached_ips())
@@ -155,16 +155,16 @@ class TestRunner(object):
 
     def warm_up_caches(self):
         print('\tWarming up caches...')
-        if not os.path.exists(paths.Absolute.FILL_LOGS):
-            os.makedirs(paths.Absolute.FILL_LOGS)
-        if not os.path.exists(paths.Absolute.FILL_LOGS):
-            os.makedirs(paths.Absolute.FILL_LOGS)
+        if not os.path.exists(paths.Relative.FILL_LOGS):
+            os.makedirs(paths.Relative.FILL_LOGS)
+        if not os.path.exists(paths.Relative.FILL_LOGS):
+            os.makedirs(paths.Relative.FILL_LOGS)
 
         middleware_command = self.command_manager.get_middleware_run_command(
             middleware_server_id=1,
             sharded=False,
             num_threads=64,
-            log_dir=paths.Absolute.FILL_LOGS,
+            log_dir=paths.Relative.FILL_LOGS,
             num_servers=self.run_configuration['num_memcached_servers'],
             memcached_ips=self.get_memcached_ips())
         self.client_manager.exec(middleware_command, 'middleware', 1)
@@ -174,7 +174,7 @@ class TestRunner(object):
                                                                        threads=2,
                                                                        clients_per_thread=32,
                                                                        workload="1:0",
-                                                                       log_dir=os.path.abspath(paths.Absolute.FILL_LOGS),
+                                                                       log_dir=os.path.abspath(paths.Relative.FILL_LOGS),
                                                                        memtier_server_id=1,
                                                                        duration=300)
         self.client_manager.exec(memtier_command, 'memtier', 1)
@@ -199,7 +199,7 @@ class TestRunner(object):
                     workload=':'.join(map(lambda x: str(x), workload)),
                     multi_get_key_size=workload[1],
                     memtier_server_id=memtier_id,
-                    log_dir=memtier_log_dir if self.local else paths.Absolute.REMOTE_LOGS)
+                    log_dir=memtier_log_dir if self.local else paths.Relative.REMOTE_LOGS)
                 self.client_manager.exec(command, 'memtier', memtier_id)
                 memtier_id += 1
 
@@ -217,7 +217,7 @@ class TestRunner(object):
                     workload=':'.join(map(lambda x: str(x), workload)),
                     multi_get_key_size=workload[1],
                     memtier_server_id=memtier_id,
-                    log_dir=memtier_log_dir if self.local else paths.Absolute.REMOTE_LOGS)
+                    log_dir=memtier_log_dir if self.local else paths.Relative.REMOTE_LOGS)
                 self.client_manager.exec(command, 'memtier', memtier_id)
                 memtier_id += 1
 
