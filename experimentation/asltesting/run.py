@@ -4,6 +4,7 @@ from asltesting.test_configuration import TestConfiguration
 from asltesting.plotter import MiddlewarePlotter, MemtierPlotter
 from asltesting.test_runner import TestRunner
 from asltesting import paths
+from asltesting.install import Installer
 import time
 
 
@@ -15,6 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--exclude ', nargs='+', type=str, default=[], dest='exclude')
     parser.add_argument('--plot', action='store_true')
     parser.add_argument('--repetitions', type=int, default=3)
+    parser.add_argument('--install', type=str, action='store_true')
     args = parser.parse_args()
 
     test_configs = []
@@ -32,6 +34,12 @@ if __name__ == '__main__':
             mt_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
             if test_config.run_configuration['num_threads_per_mw_range'][0] > 0:
                 mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
+    elif args.install:
+        installer = Installer()
+        installer.set_private_key()
+        installer.install_memtier()
+        installer.install_memcached()
+        installer.install_middleware()
     else:
         runner = TestRunner(args.repetitions, args.local)
         for test_config in test_configs:

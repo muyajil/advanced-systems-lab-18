@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "73c20669f8600de566d669472936a1b764d227cc858e0af4fdb896e5de1de613"
+            "sha256": "f26c7bd0cc9f818bb94dab4bc41ac4e0956ba7c46fc99ea07e727c821dd7b1b1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -132,10 +132,10 @@
         },
         "idna": {
             "hashes": [
-                "sha256:156a6814fb5ac1fc6850fb002e0852d56c0c8d2531923a51032d1b70760e186e",
-                "sha256:684a38a6f903c1d71d6d5fac066b58d7768af4de2b832e426ec79c30daa94a16"
+                "sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407",
+                "sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"
             ],
-            "version": "==2.7"
+            "version": "==2.8"
         },
         "kiwisolver": {
             "hashes": [
@@ -381,6 +381,14 @@
                 "sha256:f25c281f12c0da726c6ed00535ca5d1622ec755c30a3f8eafef26cf43fede694"
             ],
             "version": "==1.1.0"
+        },
+        "scp": {
+            "hashes": [
+                "sha256:1b7fd4d7e9e966542ed64a9716de7846d8a49efc5e0923e233c391119e6207b1",
+                "sha256:cfcc275c249ae59480f88fa55c4bd7795ce8b48d3a9b8fd635d82958084b4124"
+            ],
+            "index": "pypi",
+            "version": "==0.13.0"
         },
         "seaborn": {
             "hashes": [

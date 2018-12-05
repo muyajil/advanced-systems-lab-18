@@ -18,7 +18,6 @@ class ClientManager(object):
         if self.local:
             return BashClient()
         else:
-            # TODO: Memtier addresses need to be present twice
             return SSHClient(
                 self.server_config[server_type][server_id],
                 open(paths.Absolute.PRIVATE_KEY, 'r').read(),
@@ -68,3 +67,10 @@ class ClientManager(object):
             client = self.get_or_create_client(server_type, server_id)
             return client.get_internal_ip()
 
+    def set_private_key(self, server_type, server_id):
+        client = self.get_or_create_client(server_type, server_id)
+        client.set_private_key()
+
+    def download_logs(self, server_type, server_id, log_dir):
+        client = self.get_or_create_client(server_type, server_id)
+        client.download_logs(log_dir)

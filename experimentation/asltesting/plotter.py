@@ -7,8 +7,6 @@ from asltesting.image import merge_images
 from glob import glob
 
 # TODO: save processed data!
-# TODO: Histogram
-# TODO: Add Server Type to plot title
 YLABELS = {
     "set_tp_s": "Ops/Sec",
     "get_tp_s": "Ops/Sec",

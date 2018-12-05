@@ -5,6 +5,8 @@ import paramiko
 from io import StringIO
 from concurrent.futures import TimeoutError
 import shlex
+from scp import SCPClient
+from asltesting import paths
 
 
 class Client(ABC):
@@ -34,6 +36,14 @@ class Client(ABC):
 
     @abstractmethod
     def get_internal_ip(self):
+        pass
+
+    @abstractmethod
+    def set_private_key(self):
+        pass
+
+    @abstractmethod
+    def download_logs(self, log_dir):
         pass
 
 
@@ -68,6 +78,12 @@ class BashClient(Client):
 
     def get_internal_ip(self):
         return None
+
+    def set_private_key(self):
+        pass
+
+    def download_logs(self, log_dir):
+        pass
 
 
 class SSHClient(Client):
@@ -136,3 +152,12 @@ class SSHClient(Client):
         else:
             output = "STDOUT:\n{}\nSTDERR:\n{}".format(self.stdout.read().decode('utf-8'), self.stderr.read().decode('utf-8'))
             return output
+
+    def set_private_key(self):
+        self.exec_and_wait('rm /home/ajilm/.ssh/id_rsa || true')
+        scp = SCPClient(self.client.get_transport())
+        scp.put(paths.Absolute.PRIVATE_KEY, '/home/ajilm/.ssh/id_rsa')
+
+    def download_logs(self, log_dir):
+        scp = SCPClient(self.client.get_transport())
+        scp.get(paths.Absolute.REMOTE_LOGS + '*', log_dir)
