@@ -4,7 +4,7 @@ class Absolute(object):
     PRIVATE_KEY = '/home/muy/.ssh/id_rsa'
     PUBLIC_KEY = '/home/muy/.ssh/id_rsa.pub'
     SERVER_CONFIG = '/home/muy/repositories/asl18/experimentation/servers.json'
-    TESTS = '/home/muy/asl18/experimentation/tests'
+    TESTS = '/home/muy/repositories/asl18/experimentation/tests'
     CURRENT_TESTS = '/home/muy/repositories/asl18/experimentation/tests/current'
     BUILD_XML = '/home/muy/repositories/asl18/build.xml'
     JAR_FILE = '/home/muy/repositories/asl18/dist/middleware-ajilm.jar'
