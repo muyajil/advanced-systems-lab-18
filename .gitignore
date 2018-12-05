@@ -9,3 +9,7 @@ experimentation/tests/*/*/logs/
 *.pyc
 experimentation/tests/archive/*
 experimentation/fill/*
+*.aux
+*.log
+*.synctex.gz
+*.out
