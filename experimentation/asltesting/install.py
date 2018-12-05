@@ -3,7 +3,7 @@ from asltesting.client_manager import ClientManager
 cmd_install = "sudo apt-get update && sudo apt-get install -y git unzip zip build-essential autoconf automake " \
                   "libpcre3-dev libevent-dev pkg-config zlib1g-dev software-properties-common htop && " \
                   "if [ ! -d logs ]; then mkdir logs; fi && " \
-                  "if [ ! -d fill ]; then mkdir fill; fi && "
+                  "if [ ! -d fill ]; then mkdir fill; fi "
 
 
 class Installer(object):
@@ -13,10 +13,11 @@ class Installer(object):
 
     def execute_on_all_servers(self, server_type, command):
         for server_id in self.client_manager.server_config[server_type]:
-            print('-----------------------------------------------------------------')
-            print('Setting up {} server {}'.format(server_type, server_id))
-            output = self.client_manager.exec(command, 'memcached', server_id, wait=True)
-            print(output)
+            if int(server_id) < 4: # Simplest way to ignore the double memtiers
+                print('-----------------------------------------------------------------')
+                print('Setting up {} server {}'.format(server_type, server_id))
+                output = self.client_manager.exec(command, server_type, server_id, wait=True)
+                print(output)
 
     def set_private_key(self):
         for server_type in self.client_manager.server_config:
@@ -39,13 +40,13 @@ class Installer(object):
 
     def install_middleware(self):
         cmd_install_middleware = "sudo add-apt-repository ppa:openjdk-r/ppa -y && sudo apt-get update && " \
-                                 "sudo apt-get install -y openjdk-8-jdk && sudo apt-get install -y ant &&" \
+                                 "sudo apt-get install -y openjdk-8-jdk ant && " \
                                  "sudo grep -q -F \"JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/\" " \
                                  "/etc/environment || echo \"JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/\" | " \
                                  "sudo tee --append /etc/environment && " \
                                  "ssh-keyscan gitlab.ethz.ch > /home/ajilm/.ssh/known_hosts && " \
-                                 "if [ ! -d asl-fall18-project ]; then " \
-                                 "git clone git@gitlab.ethz.ch:ajilm/asl-fall18-project.git asl18; fi"
+                                 "if [ ! -d asl18 ]; then " \
+                                 "git clone git@gitlab.ethz.ch:ajilm/asl-fall18-project.git ~/asl18; fi"
 
         cmd = cmd_install + " && " + cmd_install_middleware
 

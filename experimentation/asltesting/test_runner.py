@@ -41,6 +41,7 @@ class TestRunner(object):
                 self.run_single_test(run, run_configuration, base_log_dir)
 
             self.stop_memcached_servers()
+            self.client_manager.close()
 
         except Exception as e:
             self.stop_middleware()

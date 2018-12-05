@@ -160,4 +160,4 @@ class SSHClient(Client):
 
     def download_logs(self, log_dir):
         scp = SCPClient(self.client.get_transport())
-        scp.get(paths.Absolute.REMOTE_LOGS + '*', log_dir)
+        scp.get(paths.Relative.REMOTE_LOGS + '*', log_dir)
