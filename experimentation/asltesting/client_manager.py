@@ -18,6 +18,7 @@ class ClientManager(object):
         if self.local:
             return BashClient()
         else:
+            # TODO: Memtier addresses need to be present twice
             return SSHClient(
                 self.server_config[server_type][server_id],
                 open(paths.Absolute.PRIVATE_KEY, 'r').read(),
@@ -56,7 +57,14 @@ class ClientManager(object):
         client.terminate()
 
     def close(self):
-
         for server_type in self.clients:
             for server_id in self.clients[server_type]:
                 self.clients[server_type][server_id].close()
+
+    def get_internal_ip(self, server_type, server_id):
+        if self.local:
+            return '127.0.0.1'
+        else:
+            client = self.get_or_create_client(server_type, server_id)
+            return client.get_internal_ip()
+

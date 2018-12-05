@@ -114,12 +114,16 @@ class TestRunner(object):
     def start_middleware(self, num_threads_per_mw, middleware_log_dir):
         print('\t\tStarting middleware...')
         for middleware_id in range(1, self.run_configuration['num_middlewares'] + 1):
+            memcached_ips = []
+            for memcached_id in range(1, self.run_configuration['num_memcached_servers'] + 1):
+                memcached_ips.append(self.client_manager.get_internal_ip('memcached', memcached_id))
             command = self.command_manager.get_middleware_run_command(
                 sharded=self.run_configuration['sharded'],
                 num_threads=num_threads_per_mw,
                 log_dir=middleware_log_dir,
                 middleware_server_id=middleware_id,
-                num_servers=self.run_configuration['num_memcached_servers'])
+                num_servers=self.run_configuration['num_memcached_servers'],
+                memcached_ips=memcached_ips)
             self.client_manager.exec(command=command, server_type='middleware', server_id=middleware_id)
 
         time.sleep(5)
@@ -174,8 +178,10 @@ class TestRunner(object):
         memtier_id = 1
         for _ in range(1, self.run_configuration['num_client_machines'] + 1):
             for middleware_id in range(1, self.run_configuration['num_middlewares'] + 1):
+                middleware_ip = self.client_manager.get_internal_ip('middleware', middleware_id)
                 command = self.command_manager.get_memtier_run_command(
                     middleware_server_id=middleware_id,
+                    internal_ip_middleware=middleware_ip,
                     threads=self.run_configuration['num_threads_per_memtier'],
                     clients_per_thread=num_clients_per_thread,
                     workload=':'.join(map(lambda x: str(x), workload)),
@@ -190,8 +196,10 @@ class TestRunner(object):
         memtier_id = 1
         for _ in range(1, self.run_configuration['num_client_machines'] + 1):
             for memcached_id in range(1, self.run_configuration['num_memcached_servers'] + 1):
+                memcached_ip = self.client_manager.get_internal_ip('memcached', memcached_id)
                 command = self.command_manager.get_memtier_run_command(
                     memcached_server_id=memcached_id,
+                    internal_ip_memcached=memcached_ip,
                     threads=self.run_configuration['num_threads_per_memtier'],
                     clients_per_thread=num_clients_per_thread,
                     workload=':'.join(map(lambda x: str(x), workload)),
