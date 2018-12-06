@@ -40,7 +40,7 @@ class MemtierAnalyzer(Analyzer):
             for client_id, client_stats_file in enumerate(client_stats_files):
                 temp_df = pd.read_csv(client_stats_file, header=1).dropna().astype(float)
                 temp_df = temp_df[temp_df.Second > 10]
-                temp_df = temp_df[temp_df.Second < len(temp_df) - 10]
+                temp_df = temp_df[temp_df.Second < len(temp_df)]
                 temp_df['HostId'] = client_id
                 temp_df['Repetition'] = rep_id
                 dfs.append(temp_df)
