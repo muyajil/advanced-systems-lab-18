@@ -162,3 +162,4 @@ class SSHClient(Client):
     def download_logs(self, log_dir):
         scp = SCPClient(self.client.get_transport(), sanitize=lambda x: x)
         scp.get(paths.Absolute.REMOTE_LOGS + '*', log_dir)
+        self.exec_and_wait('cd {} && rm -rf *'.format(paths.Absolute.REMOTE_LOGS))
