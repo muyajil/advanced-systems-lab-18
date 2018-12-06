@@ -9,6 +9,8 @@ class Absolute(object):
     BUILD_XML = '/home/muy/repositories/asl18/build.xml'
     JAR_FILE = '/home/muy/repositories/asl18/dist/middleware-ajilm.jar'
     FILL_LOGS = '/home/muy/repositories/asl18/fill/'
+    REMOTE_FILL_LOGS = '/home/ajilm/fill/'
+    REMOTE_LOGS = '/home/ajilm/logs/'
 
 
 class Relative(object):
@@ -16,3 +18,4 @@ class Relative(object):
     REMOTE_LOGS = '~/logs/'
     JAR_FILE = '~/asl18/dist/middleware-ajilm.jar'
     BUILD_XML = '~/asl18/build.xml'
+    REPO_PATH = '~/asl18'

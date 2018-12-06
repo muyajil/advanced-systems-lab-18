@@ -33,7 +33,8 @@ class Installer(object):
         self.execute_on_all_servers('memtier', cmd)
 
     def install_memcached(self):
-        cmd_install_memcached = "sudo apt-get install -y memcached"
+        cmd_install_memcached = "sudo apt-get install -y memcached && " \
+                                "sudo sed -i -- 's/127.0.0.1/0.0.0.0/g' /etc/memcached.conf"
         cmd = cmd_install + " && " + cmd_install_memcached
 
         self.execute_on_all_servers('memcached', cmd)

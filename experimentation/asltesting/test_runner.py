@@ -127,7 +127,7 @@ class TestRunner(object):
             command = self.command_manager.get_middleware_run_command(
                 sharded=self.run_configuration['sharded'],
                 num_threads=num_threads_per_mw,
-                log_dir=middleware_log_dir if self.local else paths.Relative.REMOTE_LOGS,
+                log_dir=middleware_log_dir if self.local else paths.Absolute.REMOTE_LOGS,
                 middleware_server_id=middleware_id,
                 num_servers=self.run_configuration['num_memcached_servers'],
                 memcached_ips=self.get_memcached_ips())
@@ -155,9 +155,9 @@ class TestRunner(object):
             self.client_manager.exec(command=command, server_type='memcached', server_id=memcached_id, wait=True)
 
     def warm_up_caches(self):
-        fill_dir = paths.Absolute.FILL_LOGS if self.local else paths.Relative.FILL_LOGS
+        fill_dir = paths.Absolute.FILL_LOGS if self.local else paths.Absolute.REMOTE_FILL_LOGS
         print('\tWarming up caches...')
-        if not os.path.exists(fill_dir):
+        if not os.path.exists(fill_dir) and self.local:
             os.makedirs(fill_dir)
 
         middleware_command = self.command_manager.get_middleware_run_command(
@@ -170,13 +170,16 @@ class TestRunner(object):
         self.client_manager.exec(middleware_command, 'middleware', 1)
         time.sleep(5)
 
+        middleware_ip = self.client_manager.get_internal_ip('middleware', 1)
+
         memtier_command = self.command_manager.get_memtier_run_command(middleware_server_id=1,
                                                                        threads=2,
                                                                        clients_per_thread=32,
                                                                        workload="1:0",
-                                                                       log_dir=os.path.abspath(fill_dir),
+                                                                       log_dir=fill_dir,
                                                                        memtier_server_id=1,
-                                                                       duration=300)
+                                                                       duration=10,
+                                                                       internal_ip_middleware=middleware_ip)
         self.client_manager.exec(memtier_command, 'memtier', 1)
         output = self.client_manager.get_output('memtier', 1)
         # print(output)
@@ -188,8 +191,8 @@ class TestRunner(object):
     def start_memtier_middleware(self, num_clients_per_thread, workload, memtier_log_dir):
         print('\t\tStarting memtier...')
         memtier_id = 1
-        for _ in range(1, self.run_configuration['num_client_machines'] + 1):
-            for middleware_id in range(1, self.run_configuration['num_middlewares'] + 1):
+        for middleware_id in range(1, self.run_configuration['num_middlewares'] + 1):
+            for _ in range(1, self.run_configuration['num_client_machines'] + 1):
                 middleware_ip = self.client_manager.get_internal_ip('middleware', middleware_id)
                 command = self.command_manager.get_memtier_run_command(
                     middleware_server_id=middleware_id,
@@ -199,7 +202,7 @@ class TestRunner(object):
                     workload=':'.join(map(lambda x: str(x), workload)),
                     multi_get_key_size=workload[1],
                     memtier_server_id=memtier_id,
-                    log_dir=memtier_log_dir if self.local else paths.Relative.REMOTE_LOGS)
+                    log_dir=memtier_log_dir if self.local else paths.Absolute.REMOTE_LOGS)
                 self.client_manager.exec(command, 'memtier', memtier_id)
                 memtier_id += 1
 
@@ -217,7 +220,7 @@ class TestRunner(object):
                     workload=':'.join(map(lambda x: str(x), workload)),
                     multi_get_key_size=workload[1],
                     memtier_server_id=memtier_id,
-                    log_dir=memtier_log_dir if self.local else paths.Relative.REMOTE_LOGS)
+                    log_dir=memtier_log_dir if self.local else paths.Absolute.REMOTE_LOGS)
                 self.client_manager.exec(command, 'memtier', memtier_id)
                 memtier_id += 1
 
@@ -244,9 +247,11 @@ class TestRunner(object):
         print('\t\t' + performance_lines[-2])
 
     def gather_memtier_logs(self, log_dir):
+        print('\t\tGetting memtier logs...')
         for server_id in range(1, self.run_configuration['num_client_machines'] + 1):
             self.client_manager.download_logs('memtier', server_id, log_dir)
 
     def gather_middleware_logs(self, log_dir):
+        print('\t\tGetting middleware logs...')
         for server_id in range(1, self.run_configuration['num_middlewares'] + 1):
             self.client_manager.download_logs('middleware', server_id, log_dir)

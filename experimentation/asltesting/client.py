@@ -90,6 +90,7 @@ class SSHClient(Client):
 
     def __init__(self, host, key, username):
         self.client = self.get_ssh_client(host, key, username)
+        self.command = None
         self.stdin = None
         self.stdout = None
         self.stderr = None
@@ -125,15 +126,15 @@ class SSHClient(Client):
             return stdout.read().decode('utf-8')
 
     def exec_and_forget(self, command):
-        stdin, stdout, stderr = self.client.exec_command(command)
-        self.stdin = stdin
+        self.command = command.split(' ')[0]
+        self.stdin, self.stdout, self.stderr = self.client.exec_command(command)
         time.sleep(1)
-        if stdout.channel.exit_status_ready():
-            stdout.channel.close()
-            exit_status = stdout.channel.recv_exit_status()
+        if self.stdout.channel.exit_status_ready():
+            self.stdout.channel.close()
+            exit_status = self.stdout.channel.recv_exit_status()
 
             if exit_status != 0:
-                raise RuntimeError('Received non-zero exit status\nCommand: {}\nError: {}'.format(command, stderr.read().decode('utf-8')))
+                raise RuntimeError('Received non-zero exit status\nCommand: {}\nError: {}'.format(command, self.stderr.read().decode('utf-8')))
 
     def get_internal_ip(self):
         _, stdout, _ = self.client.exec_command("""sh -c 'ifconfig eth0 | grep "inet addr" | cut -d ":" -f 2 | cut -d " " -f 1'""")
@@ -144,7 +145,7 @@ class SSHClient(Client):
         if self.stdin is None:
             raise RuntimeError("This is only supported for clients with previously executed 'exec_and_forget'")
         else:
-            self.stdin.write('\x03')
+            self.client.exec_command("pkill -f -SIGINT {}".format(self.command))
 
     def get_output(self):
         if self.stdin is None:
@@ -159,5 +160,5 @@ class SSHClient(Client):
         scp.put(paths.Absolute.PRIVATE_KEY, '/home/ajilm/.ssh/id_rsa')
 
     def download_logs(self, log_dir):
-        scp = SCPClient(self.client.get_transport())
-        scp.get(paths.Relative.REMOTE_LOGS + '*', log_dir)
+        scp = SCPClient(self.client.get_transport(), sanitize=lambda x: x)
+        scp.get(paths.Absolute.REMOTE_LOGS + '*', log_dir)

@@ -35,15 +35,16 @@ class CommandManager(object):
         if self.local:
             command_prefix = "docker run --rm -v {}:/output --net host memtier_benchmark ".format(log_dir)
         else:
-            command_prefix = "memtier_benchmark"
+            command_prefix = "memtier_benchmark "
 
-        command_options = "-P memcache_text -c {0} -t {1} --test-time {5} --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {2} --out-file=/output/{3}.log --client-stats=/output/{3}_{4}_clients ".format(
+        command_options = "-P memcache_text -c {0} -t {1} --test-time {5} --data-size 4096 --key-maximum=10000 --expiry-range=9999-10000 --ratio {2} --out-file={6}{3}.log --client-stats={6}{3}_{4}_clients ".format(
                 clients_per_thread,
                 threads,
                 workload,
                 memtier_server_id,
                 middleware_server_id if middleware_server_id is not None else memcached_server_id,
-                duration)
+                duration,
+                log_dir)
 
         if self.local:
 
@@ -57,10 +58,10 @@ class CommandManager(object):
 
             if internal_ip_middleware is not None:
                 command_options += "-s {} ".format(internal_ip_middleware)
-                command_options += "-p 8081 ".format(middleware_server_id)
+                command_options += "-p 808{} ".format(middleware_server_id)
             else:
                 command_options += "-s {} ".format(internal_ip_memcached)
-                command_options += "-p 11211"
+                command_options += "-p 11211 "
 
         if multi_get_key_size > 0:
             command_options += "--multi-key-get={}".format(multi_get_key_size)
@@ -83,5 +84,5 @@ class CommandManager(object):
         if self.local:
             return "ant -f {} jar".format(paths.Absolute.BUILD_XML)
         else:
-            return "ant -f {} jar".format(paths.Relative.BUILD_XML)
+            return "cd {} && git pull && ant -f {} jar".format(paths.Relative.REPO_PATH, paths.Relative.BUILD_XML)
 
