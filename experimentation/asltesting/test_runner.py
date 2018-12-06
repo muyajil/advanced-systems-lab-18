@@ -178,7 +178,7 @@ class TestRunner(object):
                                                                        workload="1:0",
                                                                        log_dir=fill_dir,
                                                                        memtier_server_id=1,
-                                                                       duration=10,
+                                                                       duration=300,
                                                                        internal_ip_middleware=middleware_ip)
         self.client_manager.exec(memtier_command, 'memtier', 1)
         output = self.client_manager.get_output('memtier', 1)
