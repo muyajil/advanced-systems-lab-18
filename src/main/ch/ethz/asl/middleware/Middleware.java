@@ -56,7 +56,7 @@ public class Middleware implements Runnable{
                     if (!command.equals("")){
                         MiddlewareQueue.add(new MiddlewareRequest(){{
                             connection = client;
-                            commands = new ArrayList<>(){{
+                            commands = new ArrayList<String>(){{
                                 add(command);
                             }};
                             requestId = nextRequestId;

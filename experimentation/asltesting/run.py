@@ -23,9 +23,9 @@ if __name__ == '__main__':
     run_id = args.run_id if args.run_id is not None else str(int(time.time()))
 
     if len(args.test_names) > 0:
-        test_configs = map(lambda test_name: TestConfiguration(test_name, run_id), args.test_names)
+        test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id), args.test_names))
     else:
-        test_configs = map(lambda test_name: TestConfiguration(test_name, run_id), filter(lambda x: x not in args.exclude, sorted(os.listdir(paths.Absolute.TESTS))))
+        test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id), filter(lambda x: x not in args.exclude, sorted(os.listdir(paths.Absolute.TESTS)))))
 
     if args.plot:
         mw_plotter = MiddlewarePlotter()
