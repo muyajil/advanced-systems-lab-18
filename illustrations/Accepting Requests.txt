@@ -1,0 +1,22 @@
+title Accepting Requests
+loop
+Net Thread->Selector: selector.select()
+Net Thread->Selector: selector.selectedKeys()
+Net Thread<--Selector:selectedKeys
+loop for key in selectedKeys
+alt if key.isAcceptable()
+Net Thread->Net Thread:clientSocket = key.channel()
+Net Thread->Connection: new Connection(clientSocket)
+Net Thread<--Connection: clientConnection
+Net Thread->Selector:clientSocket.register(selector, OP_READ, clientConnection)
+end
+alt if key.isReadable()
+Net Thread->Net Thread:clientConnection = key.attachement()
+Net Thread->Connection:read()
+Net Thread<--Connection:command
+Net Thread->MiddlewareRequest: new MiddlewareRequest(command, clientConnection, ...)
+Net Thread<--MiddlewareRequest: middlewareRequest
+Net Thread->MiddlewareQueue:enqueue(middlewareRequest)
+end
+end
+end 

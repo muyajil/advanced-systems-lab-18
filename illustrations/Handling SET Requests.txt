@@ -1,0 +1,23 @@
+title Handling SET Requests
+
+loop 
+Worker->MiddlewareQueue:take()
+Worker<--MiddlewareQueue:middlewareRequest
+Worker->MiddlewareRequest:parse(numServers, readSharded)
+alt if middlewareRequest.type == 'SET'
+loop for i = 0, i < numServers, i++
+Worker->ConnectionManager:popConnection()
+Worker<--ConnectionManager:serverConnection
+Worker->Connection:send(middlewareRequest.command)
+Worker->ConnectionManager:pushConnection(serverconnection)
+end
+Worker->Worker: responses = new List<string>()
+loop for i = 0, i < numServers, i++
+Worker->ConnectionManager:popConnection()
+Worker<--ConnectionManager:serverConnection
+Worker->Connection:responses.add(serverConnection.read())
+Worker->ConnectionManager:pushConnection(serverConnection)
+end
+Worker->Connection:middlewareRequest.connection.write(response)
+end
+end

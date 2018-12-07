@@ -1,0 +1,22 @@
+title Handling MULTI-GET Requests
+
+loop 
+Worker->MiddlewareQueue:take()
+Worker<--MiddlewareQueue:middlewareRequest
+Worker->MiddlewareRequest:parse(numServers, readSharded)
+alt if middlewareRequest.type == 'MULTI-GET'
+Worker->Worker:tempConnections = new List<Connection>()
+loop for i = 0, i < middlewareRequest.commands.size(), i++
+Worker->ConnectionManager:popConnection()
+Worker<--ConnectionManager:serverConnection
+Worker->Connection:send(middlewareRequest.command)
+Worker->Worker:tempConnections.add(serverConnection)
+end
+Worker->Worker: responses = new List<string>()
+loop for connection in tempConnections
+Worker->Connection:responses.add(connection.read())
+Worker->ConnectionManager:pushConnection(connection)
+end
+Worker->Connection:middlewareRequest.connection.write(response)
+end
+end

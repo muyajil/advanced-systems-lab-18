@@ -1,0 +1,17 @@
+title Handling GET Requests
+
+loop 
+Worker->MiddlewareQueue:take()
+Worker<--MiddlewareQueue:middlewareRequest
+Worker->MiddlewareRequest:parse(numServers, readSharded)
+alt if middlewareRequest.type == 'GET'
+
+Worker->ConnectionManager:popConnection()
+Worker<--ConnectionManager:serverConnection
+Worker->Connection:send(middlewareRequest.command)
+Worker->Connection:response = serverConnection.read()
+Worker->ConnectionManager:pushConnection(serverConnection)
+
+Worker->Connection:middlewareRequest.connection.write(response)
+end
+end
