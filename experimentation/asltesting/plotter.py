@@ -12,6 +12,8 @@ YLABELS = {
     "get_tp_s": "Ops/Sec",
     "set_rt_ms": "ms",
     "get_rt_ms": "ms",
+    "get_service_time_ms": "ms",
+    "set_service_time_ms": "ms",
     "interactive_set_rt_ms" : "ms",
     "interactive_get_rt_ms" : "ms",
     "queue_length": "Number of Requests"
@@ -22,6 +24,8 @@ TITLES = {
     "get_tp_s": "GET Throughput",
     "set_rt_ms": "SET Response Time",
     "get_rt_ms": "GET Response Time",
+    "get_service_time_ms": "GET memcached Service Time",
+    "set_service_time_ms": "SET memcached Service Time",
     "interactive_set_rt_ms": "SET Response Time (Interactive Law)",
     "interactive_get_rt_ms": "GET Response Time (Interactive Law)",
     "queue_length": "Queue Length"
@@ -32,6 +36,8 @@ SERVER_TYPE = {
     "get_tp_s": True,
     "set_rt_ms": True,
     "get_rt_ms": True,
+    "get_service_time_ms": True,
+    "set_service_time_ms": True,
     "interactive_set_rt_ms": False,
     "interactive_get_rt_ms": False,
     "queue_length": False
@@ -42,6 +48,8 @@ YLIMS = {
     "get_tp_s": 17000,
     "set_rt_ms": 30,
     "get_rt_ms": 30,
+    "get_service_time_ms": 30,
+    "set_service_time_ms": 30,
     "interactive_set_rt_ms": 30,
     "interactive_get_rt_ms": 30,
     "queue_length": 500
@@ -211,7 +219,7 @@ class MiddlewarePlotter(Plotter):
 
     @staticmethod
     def get_plot_types():
-        return ['set_rt_ms', 'set_tp_s', 'get_rt_ms', 'get_tp_s', 'queue_length', 'interactive_set_rt_ms', 'interactive_get_rt_ms']
+        return ['set_rt_ms', 'set_tp_s', 'get_rt_ms', 'get_tp_s', 'queue_length', 'interactive_set_rt_ms', 'interactive_get_rt_ms', "get_service_time_ms", "set_service_time_ms"]
 
     @staticmethod
     def get_server_type():

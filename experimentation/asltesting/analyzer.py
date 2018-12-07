@@ -179,7 +179,9 @@ class MiddlewareAnalyzer(Analyzer):
          conf_set_rt_ms,
          avg_set_tp_s,
          conf_set_tp_s,
-         avg_interactive_set_rt_ms) = MiddlewareAnalyzer.get_performance(set_df, s_bins)
+         avg_interactive_set_rt_ms,
+         avg_set_service_time_ms,
+         conf_set_service_time_ms) = MiddlewareAnalyzer.get_performance(set_df, s_bins)
 
         (avg_get_rt_ms,
          get_rt_ms_25,
@@ -190,7 +192,9 @@ class MiddlewareAnalyzer(Analyzer):
          conf_get_rt_ms,
          avg_get_tp_s,
          conf_get_tp_s,
-         avg_interactive_get_rt_ms) = MiddlewareAnalyzer.get_performance(get_df, s_bins)
+         avg_interactive_get_rt_ms,
+         avg_get_service_time_ms,
+         conf_get_service_time_ms) = MiddlewareAnalyzer.get_performance(get_df, s_bins)
 
         miss_rate = 0
         if len(get_df) > 0:
@@ -226,6 +230,11 @@ class MiddlewareAnalyzer(Analyzer):
             "avg_queue_length": [avg_queue_length],
             "conf_queue_length": [conf_queue_length],
 
+            "avg_get_service_time_ms": [avg_get_service_time_ms],
+            "conf_get_service_time_ms": [conf_get_service_time_ms],
+            "avg_set_service_time_ms": [avg_set_service_time_ms],
+            "conf_set_service_time_ms": [conf_set_service_time_ms],
+
             "miss_rate": [miss_rate]
         }
 
@@ -234,6 +243,10 @@ class MiddlewareAnalyzer(Analyzer):
 
         if df.empty:
             return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+        df['ServiceTimeMilli'] = (df['ReceivedFromServerNano'] - df['SentToServerNano']) / 1e6
+        avg_service_time = df['ServiceTimeMilli'].mean()
+        conf_service_time = Analyzer.get_confidence_interval(df['ServiceTimeMilli'])
 
         df['ResponseTimeMilli'] = (df['ReturnedToClientNano'] - df['EnqueueNano']) / 1e6
         avg_rt_ms = df['ResponseTimeMilli'].mean()
@@ -259,5 +272,5 @@ class MiddlewareAnalyzer(Analyzer):
         avg_think_time = ((df['ReturnedToClientNano'] - df['ReceivedFromServerNano']) / 1e9).mean()
         avg_interactive_rt_ms = (df['ClientId'].nunique() / avg_tp_s - avg_think_time) * 1000
 
-        return avg_rt_ms, rt_ms_25, rt_ms_50, rt_ms_75, rt_ms_90, rt_ms_99, conf_rt_ms, avg_tp_s, conf_tp_s, avg_interactive_rt_ms
+        return avg_rt_ms, rt_ms_25, rt_ms_50, rt_ms_75, rt_ms_90, rt_ms_99, conf_rt_ms, avg_tp_s, conf_tp_s, avg_interactive_rt_ms, avg_service_time, conf_service_time
 

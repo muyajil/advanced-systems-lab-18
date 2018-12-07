@@ -106,7 +106,7 @@ class SSHClient(Client):
         string_io.close()
         while not success:
             try:
-                ssh_client.connect(host, pkey=private_key, username=username)
+                ssh_client.connect(host, pkey=private_key, username=username, timeout=10000)
                 success = True
             except (TimeoutError,
                     paramiko.ssh_exception.NoValidConnectionsError,
