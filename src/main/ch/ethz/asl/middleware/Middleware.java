@@ -1,27 +1,30 @@
 package ch.ethz.asl.middleware;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
 import ch.ethz.asl.middleware.utils.Connection;
-import ch.ethz.asl.middleware.utils.ConnectionManager;
 import ch.ethz.asl.middleware.utils.MiddlewareRequest;
-import ch.ethz.asl.middleware.Worker;
-import ch.ethz.asl.middleware.MiddlewareQueue;
 
 public class Middleware implements Runnable{
 
     private int listenPort;
+    private String myIp;
     private List<Thread> workers;
     private int nextRequestId = 0;
     private static final Logger logger = LogManager.getLogger("Middleware");
     private boolean isShutdown;
+    private Selector selector;
 
     public Middleware(
         String ipAddress,
@@ -29,43 +32,38 @@ public class Middleware implements Runnable{
         List<String> mcAddresses,
         int numThreads,
         boolean readSharded
-    ){
+    ) throws IOException {
         this.listenPort = port;
+        this.myIp = ipAddress;
         logger.trace(MiddlewareRequest.getHeader());
         MiddlewareRequest.serverStartMilli = System.currentTimeMillis();
         MiddlewareRequest.serverStartNano = System.nanoTime();
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownWorkers));
+        this.selector = Selector.open();
         this.workers = getRunningWorkers(numThreads, mcAddresses, readSharded);
     }
 
     @Override
     public void run(){
         try{
-            ServerSocketChannel listeningSocket = getListeningSocket();
+            initListeningSocket();
 
             while(!isShutdown){
-                SocketChannel clientSocket = listeningSocket.accept();
-                if (clientSocket != null){
-                    Clients.addConnection(new Connection(clientSocket));
+
+                if (selector.select() <= 0) {
+                    continue;
                 }
 
-                Connection client = Clients.popConnection();
-                if (client != null){
-                    String command = client.read();
-                    if (!command.equals("")){
-                        MiddlewareQueue.add(new MiddlewareRequest(){{
-                            connection = client;
-                            commands = new ArrayList<String>(){{
-                                add(command);
-                            }};
-                            requestId = nextRequestId;
-                            clientId = client.Id;
-                            enqueueNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
-                        }});
-                        nextRequestId++;
-                    } else {
-                        Clients.putConnection(client);
+                Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
+                while (selectedKeys.hasNext()){
+                    SelectionKey key = selectedKeys.next();
+                    selectedKeys.remove();
+                    if (key.isAcceptable()){
+                        registerNewClient(key);
+                    }
+                    if (key.isReadable()){
+                        handleNewRequest(key);
                     }
                 }
             }
@@ -76,11 +74,35 @@ public class Middleware implements Runnable{
         }
     }
 
-    private ServerSocketChannel getListeningSocket() throws IOException{
+    private void handleNewRequest(SelectionKey key) throws IOException, InterruptedException{
+        Connection client = (Connection) key.attachment();
+        String command = client.read();
+        if (!command.equals("")) {
+            MiddlewareQueue.add(new MiddlewareRequest() {{
+                connection = client;
+                commands = new ArrayList<String>() {{
+                    add(command);
+                }};
+                requestId = nextRequestId;
+                clientId = client.Id;
+                enqueueNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
+            }});
+            nextRequestId++;
+        }
+    }
+
+    private void registerNewClient(SelectionKey key) throws IOException{
+        ServerSocketChannel listeningSocket = (ServerSocketChannel) key.channel();
+        SocketChannel clientSocket = listeningSocket.accept();
+        clientSocket.configureBlocking(false);
+        clientSocket.register(selector, SelectionKey.OP_READ, new Connection(clientSocket));
+    }
+
+    private void initListeningSocket() throws IOException{
         ServerSocketChannel listeningSocket = ServerSocketChannel.open();
-        listeningSocket.socket().bind(new InetSocketAddress(listenPort));
+        listeningSocket.socket().bind(new InetSocketAddress(InetAddress.getByName(this.myIp), this.listenPort));
         listeningSocket.configureBlocking(false);
-        return listeningSocket;
+        listeningSocket.register(selector, SelectionKey.OP_ACCEPT);
     }
 
     private List<Thread> getRunningWorkers(int numWorkers, List<String> mcAddresses, boolean readSharded){

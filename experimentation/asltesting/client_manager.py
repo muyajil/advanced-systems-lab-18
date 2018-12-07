@@ -21,6 +21,8 @@ class ClientManager(object):
         if self.local:
             return BashClient()
         else:
+            if type(server_id) is not str:
+                server_id = str(server_id)
             return SSHClient(
                 self.server_config[server_type][server_id],
                 open(paths.Absolute.PRIVATE_KEY, 'r').read(),

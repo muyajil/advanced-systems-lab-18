@@ -9,7 +9,7 @@ import java.net.*;
 public class Connection{
 
     private ByteBuffer buffer;
-    private SocketChannel socketChannel;
+    public SocketChannel socketChannel;
     public int Id;
     private boolean isBlocking;
 

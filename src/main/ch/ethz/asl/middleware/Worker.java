@@ -57,7 +57,6 @@ public class Worker implements Runnable {
 
                 // Finished processing request therefore we print it and give the connection back into the client pool
                 logger.trace(request.toString());
-                Clients.putConnection(request.connection);
             }
             System.out.println("Thread out of while loop");
         } catch (InterruptedException e){

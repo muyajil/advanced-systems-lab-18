@@ -1,7 +1,8 @@
 package ch.ethz.asl.middleware.utils;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -12,7 +13,7 @@ public class ConnectionManager{
     private boolean isBlocking;
     private BlockingQueue<Connection> Connections;
 
-    public ConnectionManager(boolean isBlocking){
+    public ConnectionManager(boolean isBlocking) {
         nextId = 0;
         this.isBlocking = isBlocking;
         Connections = new LinkedBlockingQueue<Connection>();
