@@ -104,8 +104,8 @@ public class Middleware implements Runnable{
 
     private void initListeningSocket() throws IOException{
         ServerSocketChannel listeningSocket = ServerSocketChannel.open();
-        listeningSocket.socket().bind(new InetSocketAddress(InetAddress.getByName(this.myIp), this.listenPort));
         listeningSocket.configureBlocking(false);
+        listeningSocket.socket().bind(new InetSocketAddress(InetAddress.getByName(this.myIp), this.listenPort));
         listeningSocket.register(selector, SelectionKey.OP_ACCEPT);
     }
 
