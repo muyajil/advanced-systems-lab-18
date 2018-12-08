@@ -55,7 +55,7 @@ public class Middleware implements Runnable{
 
             while(!isShutdown){
 
-                if (selector.selectNow() <= 0) {
+                if (selector.select() <= 0) {
                     continue;
                 }
 
