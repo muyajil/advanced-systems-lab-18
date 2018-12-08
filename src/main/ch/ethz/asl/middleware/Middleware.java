@@ -56,7 +56,6 @@ public class Middleware implements Runnable{
             while(!isShutdown){
 
                 if (selector.select() <= 0) {
-                    System.out.println("Empty select");
                     continue;
                 }
                 Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
@@ -66,10 +65,10 @@ public class Middleware implements Runnable{
                     if (key.isValid() && key.isAcceptable()){
                         registerNewClient(key);
                     }
-                    if (key.isValid() && key.isReadable()){
+                    else if (key.isValid() && key.isReadable()){
                         handleNewRequest(key);
                     }
-                    if (!key.isValid()){
+                    else if (!key.isValid()){
                         deregisterClient(key);
                     }
                 }
