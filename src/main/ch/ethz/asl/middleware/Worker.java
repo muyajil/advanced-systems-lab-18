@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Worker implements Runnable {
-    private ConnectionManager servers;
+    private ServerManager servers;
     private List<String> serverAddresses;
     private boolean readSharded;
     private int numServers;
@@ -23,8 +23,8 @@ public class Worker implements Runnable {
         this.numServers = serverAddresses.size();
         this.readSharded = readSharded;
         this.id = id;
-        servers = new ConnectionManager(true, numServers);
-        this.buffer = ByteBuffer.allocate(51200);
+        servers = new ServerManager(true, numServers);
+        this.buffer = ByteBuffer.allocate(65536);
     }
 
     @Override

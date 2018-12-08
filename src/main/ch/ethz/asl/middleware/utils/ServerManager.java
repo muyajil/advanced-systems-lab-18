@@ -3,14 +3,14 @@ package ch.ethz.asl.middleware.utils;
 import java.io.IOException;
 
 
-public class ConnectionManager{
+public class ServerManager {
     
     private int nextId;
     private boolean isBlocking;
     private Connection[] Connections;
     private int numServers;
 
-    public ConnectionManager(boolean isBlocking, int numServers) {
+    public ServerManager(boolean isBlocking, int numServers) {
         nextId = 0;
         this.isBlocking = isBlocking;
         Connections = new Connection[numServers];

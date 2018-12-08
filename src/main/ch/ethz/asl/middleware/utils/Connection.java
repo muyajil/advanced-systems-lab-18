@@ -21,7 +21,7 @@ public class Connection{
         this.isBlocking = isBlocking;
     }
 
-    public synchronized String read(ByteBuffer buffer) throws IOException{
+    public String read(ByteBuffer buffer) throws IOException{
         if(this.isBlocking){
             return readBlocking(buffer);
         }
@@ -61,7 +61,7 @@ public class Connection{
         return new String(buffer.array()).substring(0, totalBytesRead);
     }
 
-    public synchronized void write(String message, ByteBuffer buffer) throws IOException{
+    public void write(String message, ByteBuffer buffer) throws IOException{
         buffer.clear();
         buffer.put(message.getBytes());
         buffer.flip();

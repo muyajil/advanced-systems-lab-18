@@ -21,7 +21,7 @@ public class Middleware implements Runnable{
 
     private int listenPort;
     private String myIp;
-    private List<Thread> workers;
+    private Thread[] workers;
     private int nextRequestId = 0;
     private static final Logger logger = LogManager.getLogger("Middleware");
     private boolean isShutdown;
@@ -45,7 +45,7 @@ public class Middleware implements Runnable{
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownWorkers));
         this.selector = Selector.open();
         this.workers = getRunningWorkers(numThreads, mcAddresses, readSharded);
-        this.readBuffer = ByteBuffer.allocate(51200);
+        this.readBuffer = ByteBuffer.allocate(65536);
     }
 
     @Override
@@ -112,12 +112,12 @@ public class Middleware implements Runnable{
         listeningSocket.register(selector, SelectionKey.OP_ACCEPT);
     }
 
-    private List<Thread> getRunningWorkers(int numWorkers, List<String> mcAddresses, boolean readSharded){
-        List<Thread> workers = new ArrayList<>();
+    private Thread[] getRunningWorkers(int numWorkers, List<String> mcAddresses, boolean readSharded){
+        Thread[] workers = new Thread[numWorkers];
         for (int i = 0; i < numWorkers; i++){
             Thread worker = new Thread(new Worker(mcAddresses, readSharded, i));
             worker.start();
-            workers.add(worker);
+            workers[i] = worker;
         }
         
         return workers;

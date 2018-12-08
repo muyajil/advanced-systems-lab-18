@@ -17,7 +17,7 @@ public class MiddlewareQueue{
         queue.put(request);
     }
 
-    public static synchronized MiddlewareRequest take() throws InterruptedException{
+    public synchronized static MiddlewareRequest take() throws InterruptedException{
         return queue.take();
     }
 
