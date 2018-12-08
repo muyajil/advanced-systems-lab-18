@@ -8,14 +8,12 @@ import java.net.*;
 
 public class Connection{
 
-    private ByteBuffer buffer;
     public SocketChannel socketChannel;
     public int Id;
     private boolean isBlocking;
 
     public Connection(SocketChannel socketChannel){
         this.socketChannel = socketChannel;
-        this.buffer = ByteBuffer.allocate(51200); // 50kb is enough to cover all cases
     }
 
     public void configureBlocking(boolean isBlocking) throws IOException{
@@ -23,14 +21,14 @@ public class Connection{
         this.isBlocking = isBlocking;
     }
 
-    public synchronized String read() throws IOException{
+    public synchronized String read(ByteBuffer buffer) throws IOException{
         if(this.isBlocking){
-            return readBlocking();
+            return readBlocking(buffer);
         }
-        return readNonBlocking();
+        return readNonBlocking(buffer);
     }
 
-    private String readBlocking() throws IOException{
+    private String readBlocking(ByteBuffer buffer) throws IOException{
         buffer.clear();
         int totalBytesRead = 0;
 
@@ -44,7 +42,7 @@ public class Connection{
         return new String(buffer.array()).substring(0, totalBytesRead);
     }
 
-    private String readNonBlocking() throws IOException{
+    private String readNonBlocking(ByteBuffer buffer) throws IOException{
         buffer.clear();
         int totalBytesRead = socketChannel.read(buffer);
 
@@ -63,7 +61,7 @@ public class Connection{
         return new String(buffer.array()).substring(0, totalBytesRead);
     }
 
-    public synchronized void write(String message) throws IOException{
+    public synchronized void write(String message, ByteBuffer buffer) throws IOException{
         buffer.clear();
         buffer.put(message.getBytes());
         buffer.flip();

@@ -3,6 +3,7 @@ package ch.ethz.asl.middleware;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -26,6 +27,7 @@ public class Middleware implements Runnable{
     private boolean isShutdown;
     private Selector selector;
     private int nextClientId = 0;
+    private ByteBuffer readBuffer;
 
     public Middleware(
         String ipAddress,
@@ -43,6 +45,7 @@ public class Middleware implements Runnable{
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownWorkers));
         this.selector = Selector.open();
         this.workers = getRunningWorkers(numThreads, mcAddresses, readSharded);
+        this.readBuffer = ByteBuffer.allocate(51200);
     }
 
     @Override
@@ -76,9 +79,9 @@ public class Middleware implements Runnable{
     }
 
     private void handleNewRequest(SelectionKey key) throws IOException, InterruptedException{
-        Connection client = (Connection) key.attachment();
         long startReceiving = MiddlewareRequest.getRealTimestamp(System.nanoTime());
-        String cmd = client.read();
+        Connection client = (Connection) key.attachment();
+        String cmd = client.read(readBuffer);
         if (!cmd.equals("")) {
             MiddlewareQueue.add(new MiddlewareRequest() {{
                 connection = client;

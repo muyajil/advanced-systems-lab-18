@@ -1,5 +1,6 @@
 package ch.ethz.asl.middleware;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.*;
 import java.net.*;
@@ -15,6 +16,7 @@ public class Worker implements Runnable {
     private int numServers;
     private final int id;
     private static final Logger logger = LogManager.getLogger("Worker");
+    private ByteBuffer buffer;
 
     public Worker(List<String> serverAddresses, boolean readSharded, int id) {
         this.serverAddresses = serverAddresses;
@@ -22,6 +24,7 @@ public class Worker implements Runnable {
         this.readSharded = readSharded;
         this.id = id;
         servers = new ConnectionManager(true, numServers);
+        this.buffer = ByteBuffer.allocate(51200);
     }
 
     @Override
@@ -52,7 +55,7 @@ public class Worker implements Runnable {
                         response = "";
                 }
 
-                request.connection.write(response);
+                request.connection.write(response, buffer);
                 request.returnedToClientNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
                 // Finished processing request therefore we print it and give the connection back into the client pool
@@ -72,7 +75,7 @@ public class Worker implements Runnable {
         // send all requests
         for (int i = 0; i < numServers; i++){
             Connection server = servers.getConnection(request.requestId + i);
-            server.write(request.command);
+            server.write(request.command, buffer);
             request.serverId = server.Id;
         }
 
@@ -82,7 +85,7 @@ public class Worker implements Runnable {
         String[] responses = new String[numServers];
         for (int i = 0; i < numServers; i++){
             Connection server = servers.getConnection(request.requestId + i);
-            responses[i] = server.read();
+            responses[i] = server.read(buffer);
         }
 
         request.receivedFromServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
@@ -106,12 +109,12 @@ public class Worker implements Runnable {
 
     private String handleGetRequest(MiddlewareRequest request) throws IOException{
         Connection server = servers.getConnection(request.requestId);
-        server.write(request.command);
+        server.write(request.command, buffer);
 
         request.serverId = server.Id;
         request.sentToServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
-        String response = server.read();
+        String response = server.read(buffer);
 
         request.receivedFromServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
@@ -127,7 +130,7 @@ public class Worker implements Runnable {
         for (int i = 0; i < request.commands.size(); i++){
             String command = request.commands.get(i);
             Connection server = servers.getConnection(request.requestId + i);
-            server.write(command);
+            server.write(command, buffer);
             request.serverId = server.Id;
         }
 
@@ -137,7 +140,7 @@ public class Worker implements Runnable {
         String[] responses = new String[request.commands.size()];
         for (int i = 0; i < request.commands.size(); i++){
             Connection server = servers.getConnection(request.requestId + i);
-            responses[i] = server.read();
+            responses[i] = server.read(buffer);
         }
 
         request.receivedFromServerNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
