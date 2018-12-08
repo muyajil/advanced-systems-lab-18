@@ -242,7 +242,7 @@ class MiddlewareAnalyzer(Analyzer):
     def get_performance(df, seconds_bins):
 
         if df.empty:
-            return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
         df['ServiceTimeMilli'] = (df['ReceivedFromServerNano'] - df['SentToServerNano']) / 1e6
         avg_service_time = df['ServiceTimeMilli'].mean()

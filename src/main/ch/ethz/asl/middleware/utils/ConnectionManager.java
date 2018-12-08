@@ -1,36 +1,30 @@
 package ch.ethz.asl.middleware.utils;
 
 import java.io.IOException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class ConnectionManager{
     
     private int nextId;
     private boolean isBlocking;
-    private BlockingQueue<Connection> Connections;
+    private Connection[] Connections;
+    private int numServers;
 
-    public ConnectionManager(boolean isBlocking) {
+    public ConnectionManager(boolean isBlocking, int numServers) {
         nextId = 0;
         this.isBlocking = isBlocking;
-        Connections = new LinkedBlockingQueue<Connection>();
+        Connections = new Connection[numServers];
+        this.numServers = numServers;
     }
 
-    public synchronized void addConnection(Connection connection) throws IOException{
+    public void addConnection(Connection connection) throws IOException{
         connection.Id = nextId;
         connection.configureBlocking(isBlocking);
         nextId += 1;
-        Connections.add(connection);
+        Connections[connection.Id] = connection;
     }
 
-    public synchronized Connection popConnection(){
-        return Connections.poll();
-    }
-
-    public synchronized void putConnection(Connection connection){
-        Connections.add(connection);
+    public Connection getConnection(int requestId){
+        return Connections[requestId % numServers];
     }
 }

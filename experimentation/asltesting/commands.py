@@ -34,6 +34,7 @@ class CommandManager(object):
 
         if self.local:
             command_prefix = "docker run --rm -v {}:/output --net host memtier_benchmark ".format(log_dir)
+            log_dir = '/output/'
         else:
             command_prefix = "memtier_benchmark "
 

@@ -11,6 +11,7 @@ public class MiddlewareRequest {
     public Connection connection;
     public String requestType;
     public List<String> commands;
+    public String command;
     public int clientId;
     public int serverId;
     public int multiGetSize;
@@ -22,13 +23,12 @@ public class MiddlewareRequest {
     public long sentToServerNano;
     public long receivedFromServerNano;
     public long returnedToClientNano;
+    public long startReceivingNano;
 
     public static long serverStartMilli;
     public static long serverStartNano;
 
     public void parse(int numServers, boolean readSharded){
-        String command = commands.get(0);
-
 
         String[] elems = command.replace("\r\n", "").split(" ");
         
@@ -103,6 +103,8 @@ public class MiddlewareRequest {
             "," +
             isSuccessful +
             "," +
+            startReceivingNano +
+            "," +
             enqueueNano +
             "," +
             dequeueNano +
@@ -123,6 +125,6 @@ public class MiddlewareRequest {
     }
 
     public static String getHeader(){
-        return "WorkerId,RequestId,RequestType,ClientId,ServerId,MultiGetSize,NumKeysReturned,IsSuccessful,EnqueueNano,DequeueNano,SentToServerNano,ReceivedFromServerNano,ReturnedToClientNano,QueueLength";
+        return "WorkerId,RequestId,RequestType,ClientId,ServerId,MultiGetSize,NumKeysReturned,IsSuccessful,StartReceivingNano,EnqueueNano,DequeueNano,SentToServerNano,ReceivedFromServerNano,ReturnedToClientNano,QueueLength";
     }
 }

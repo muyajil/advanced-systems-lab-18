@@ -76,16 +76,16 @@ public class Middleware implements Runnable{
 
     private void handleNewRequest(SelectionKey key) throws IOException, InterruptedException{
         Connection client = (Connection) key.attachment();
-        String command = client.read();
-        if (!command.equals("")) {
+        long startReceiving = MiddlewareRequest.getRealTimestamp(System.nanoTime());
+        String cmd = client.read();
+        if (!cmd.equals("")) {
             MiddlewareQueue.add(new MiddlewareRequest() {{
                 connection = client;
-                commands = new ArrayList<String>() {{
-                    add(command);
-                }};
+                command = cmd;
                 requestId = nextRequestId;
                 clientId = client.Id;
                 enqueueNano = MiddlewareRequest.getRealTimestamp(System.nanoTime());
+                startReceivingNano = startReceiving;
             }});
             nextRequestId++;
         }
@@ -94,8 +94,9 @@ public class Middleware implements Runnable{
     private void registerNewClient(SelectionKey key) throws IOException{
         ServerSocketChannel listeningSocket = (ServerSocketChannel) key.channel();
         SocketChannel clientSocket = listeningSocket.accept();
-        clientSocket.configureBlocking(false);
-        clientSocket.register(selector, SelectionKey.OP_READ, new Connection(clientSocket));
+        Connection client = new Connection(clientSocket);
+        client.configureBlocking(false);
+        client.socketChannel.register(selector, SelectionKey.OP_READ, client);
     }
 
     private void initListeningSocket() throws IOException{

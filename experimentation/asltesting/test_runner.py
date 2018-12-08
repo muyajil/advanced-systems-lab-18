@@ -32,8 +32,9 @@ class TestRunner(object):
             self.build_middleware()
 
             self.start_memcached_servers()
-
-            self.warm_up_caches()
+            if not sum(map(lambda x: x[0], run_configuration['workloads'])) == len(run_configuration['workloads']) and \
+                sum(map(lambda x: x[1], run_configuration['workloads'])) == 0:
+                self.warm_up_caches()
 
             for run in range(self.num_runs):
                 print('################################################################')
@@ -178,7 +179,7 @@ class TestRunner(object):
                                                                        workload="1:0",
                                                                        log_dir=fill_dir,
                                                                        memtier_server_id=1,
-                                                                       duration=300,
+                                                                       duration=10,
                                                                        internal_ip_middleware=middleware_ip)
         self.client_manager.exec(memtier_command, 'memtier', 1)
         output = self.client_manager.get_output('memtier', 1)
@@ -244,7 +245,10 @@ class TestRunner(object):
         output = self.client_manager.get_output('memtier', memtier_id)
         lines = output.split('\n')
         performance_lines = lines[6].split('\r')
-        print('\t\t' + performance_lines[-2])
+        try:
+            print('\t\t' + performance_lines[-2])
+        except IndexError:
+            print(output)
 
     def gather_memtier_logs(self, log_dir):
         print('\t\tGetting memtier logs...')
