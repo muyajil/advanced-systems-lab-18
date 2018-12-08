@@ -152,8 +152,7 @@ class TestRunner(object):
     def stop_memcached_servers(self):
         print('\tStopping memcached...')
         for memcached_id in range(1, self.run_configuration['num_memcached_servers'] + 1):
-            command = self.command_manager.get_memcached_stop_command()
-            self.client_manager.exec(command=command, server_type='memcached', server_id=memcached_id, wait=True)
+            self.client_manager.terminate('memcached', memcached_id)
 
     def warm_up_caches(self):
         fill_dir = paths.Absolute.FILL_LOGS if self.local else paths.Absolute.REMOTE_FILL_LOGS

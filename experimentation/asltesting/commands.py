@@ -11,13 +11,7 @@ class CommandManager(object):
         if self.local:
             return "docker-compose -f {} up -d memcached_{}".format(paths.Absolute.MEMCACHED_YML, server_id)
         else:
-            return "sudo service memcached start"
-
-    def get_memcached_stop_command(self):
-        if self.local:
-            return "docker-compose -f {} down".format(paths.Absolute.MEMCACHED_YML)
-        else:
-            return "sudo service memcached stop"
+            return "memcached -t 1 -p 11211"
 
     def get_memtier_run_command(self,
                                 memtier_server_id,
