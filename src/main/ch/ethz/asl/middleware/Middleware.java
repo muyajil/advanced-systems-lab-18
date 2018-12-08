@@ -54,23 +54,29 @@ public class Middleware implements Runnable{
             initListeningSocket();
 
             while(!isShutdown){
+//                long callingSelect = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
                 if (selector.select() <= 0) {
+                    System.out.println("Empty select");
                     continue;
                 }
-
+//                long selectReturned = MiddlewareRequest.getRealTimestamp(System.nanoTime());
+//                System.out.println("Select took " + ((selectReturned - callingSelect)/1000000) + " ms");
                 Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
                 while (selectedKeys.hasNext()){
                     SelectionKey key = selectedKeys.next();
                     selectedKeys.remove();
-                    if (key.isAcceptable()){
+                    if (key.isValid() && key.isAcceptable()){
+//                        System.out.println("Acceptable select");
                         registerNewClient(key);
                     }
-                    if (key.isReadable()){
+                    if (key.isValid() && key.isReadable()){
+//                        System.out.println("Readable select");
                         handleNewRequest(key);
                     }
                 }
             }
+            selector.close();
             LogManager.shutdown();
 
         } catch(Exception e){
@@ -92,6 +98,8 @@ public class Middleware implements Runnable{
                 startReceivingNano = startReceiving;
             }});
             nextRequestId++;
+        } else {
+            deregisterClient(key);
         }
     }
 
@@ -102,7 +110,13 @@ public class Middleware implements Runnable{
         client.Id = nextClientId;
         nextClientId += 1;
         client.configureBlocking(false);
-        client.socketChannel.register(selector, SelectionKey.OP_READ, client);
+        client.socketChannel.register(key.selector(), SelectionKey.OP_READ, client);
+    }
+
+    private void deregisterClient(SelectionKey key) throws IOException{
+        SocketChannel channel = (SocketChannel) key.channel();
+        channel.close();
+        key.cancel();
     }
 
     private void initListeningSocket() throws IOException{

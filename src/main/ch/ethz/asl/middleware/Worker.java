@@ -160,7 +160,6 @@ public class Worker implements Runnable {
     }
 
     private void setupConnections(List<String> serverAddresses) throws IOException {
-        System.out.println(serverAddresses);
         for (String address : serverAddresses){
             String[] parts = address.split(":");
             SocketChannel serverSocket = SocketChannel.open();
