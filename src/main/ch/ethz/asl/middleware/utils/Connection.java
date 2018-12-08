@@ -61,7 +61,8 @@ public class Connection{
         return new String(buffer.array()).substring(0, totalBytesRead);
     }
 
-    public void write(String message, ByteBuffer buffer) throws IOException{
+    public void write(String message) throws IOException{
+        ByteBuffer buffer = ByteBuffer.allocate(message.length());
         buffer.clear();
         buffer.put(message.getBytes());
         buffer.flip();
