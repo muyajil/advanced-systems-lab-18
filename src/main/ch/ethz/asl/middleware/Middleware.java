@@ -54,25 +54,23 @@ public class Middleware implements Runnable{
             initListeningSocket();
 
             while(!isShutdown){
-//                long callingSelect = MiddlewareRequest.getRealTimestamp(System.nanoTime());
 
                 if (selector.select() <= 0) {
                     System.out.println("Empty select");
                     continue;
                 }
-//                long selectReturned = MiddlewareRequest.getRealTimestamp(System.nanoTime());
-//                System.out.println("Select took " + ((selectReturned - callingSelect)/1000000) + " ms");
                 Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
                 while (selectedKeys.hasNext()){
                     SelectionKey key = selectedKeys.next();
                     selectedKeys.remove();
                     if (key.isValid() && key.isAcceptable()){
-//                        System.out.println("Acceptable select");
                         registerNewClient(key);
                     }
                     if (key.isValid() && key.isReadable()){
-//                        System.out.println("Readable select");
                         handleNewRequest(key);
+                    }
+                    if (!key.isValid()){
+                        deregisterClient(key);
                     }
                 }
             }
