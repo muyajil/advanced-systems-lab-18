@@ -248,7 +248,7 @@ class MiddlewareAnalyzer(Analyzer):
         avg_service_time = df['ServiceTimeMilli'].mean()
         conf_service_time = Analyzer.get_confidence_interval(df['ServiceTimeMilli'])
 
-        df['ResponseTimeMilli'] = (df['ReturnedToClientNano'] - df['EnqueueNano']) / 1e6
+        df['ResponseTimeMilli'] = (df['ReturnedToClientNano'] - df['StartReceivingNano']) / 1e6
         avg_rt_ms = df['ResponseTimeMilli'].mean()
         rt_ms_25 = df['ResponseTimeMilli'].quantile(0.25)
         rt_ms_50 = df['ResponseTimeMilli'].quantile(0.5)
