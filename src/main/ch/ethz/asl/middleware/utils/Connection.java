@@ -49,11 +49,11 @@ public class Connection{
         int totalBytesRead = socketChannel.read(buffer);
 
         while(true){
-            totalBytesRead += socketChannel.read(buffer);
-
             if(totalBytesRead <= 0){
                 return "";
             }
+
+            totalBytesRead += socketChannel.read(buffer);
 
             if(buffer.array()[totalBytesRead - 1] == 10){
                 break;

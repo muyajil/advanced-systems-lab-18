@@ -25,6 +25,7 @@ public class Middleware implements Runnable{
     private static final Logger logger = LogManager.getLogger("Middleware");
     private boolean isShutdown;
     private Selector selector;
+    private int nextClientId = 0;
 
     public Middleware(
         String ipAddress,
@@ -95,6 +96,8 @@ public class Middleware implements Runnable{
         ServerSocketChannel listeningSocket = (ServerSocketChannel) key.channel();
         SocketChannel clientSocket = listeningSocket.accept();
         Connection client = new Connection(clientSocket);
+        client.Id = nextClientId;
+        nextClientId += 1;
         client.configureBlocking(false);
         client.socketChannel.register(selector, SelectionKey.OP_READ, client);
     }
