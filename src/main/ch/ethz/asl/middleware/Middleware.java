@@ -68,9 +68,6 @@ public class Middleware implements Runnable{
                     else if (key.isValid() && key.isReadable()){
                         handleNewRequest(key);
                     }
-                    else if (!key.isValid()){
-                        deregisterClient(key);
-                    }
                 }
             }
             selector.close();
@@ -85,7 +82,9 @@ public class Middleware implements Runnable{
         long startReceiving = MiddlewareRequest.getRealTimestamp(System.nanoTime());
         Connection client = (Connection) key.attachment();
         String cmd = client.read(readBuffer);
-        if (!cmd.equals("")) {
+        if (cmd.equals("EOF")){
+            deregisterClient(key);
+        } else if (!cmd.equals("")) {
             MiddlewareQueue.add(new MiddlewareRequest() {{
                 connection = client;
                 command = cmd;
@@ -95,8 +94,6 @@ public class Middleware implements Runnable{
                 startReceivingNano = startReceiving;
             }});
             nextRequestId++;
-        } else {
-            deregisterClient(key);
         }
     }
 

@@ -32,12 +32,9 @@ public class Connection{
         buffer.clear();
         int totalBytesRead = 0;
 
-        while(true){
+        do {
             totalBytesRead += socketChannel.read(buffer);
-            if(buffer.get(totalBytesRead - 1) == 10){
-                break;
-            }
-        }
+        } while (buffer.get(totalBytesRead - 1) != 10);
 
         byte[] bytes = new byte[totalBytesRead];
         buffer.flip();
@@ -47,18 +44,20 @@ public class Connection{
 
     private String readNonBlocking(ByteBuffer buffer) throws IOException{
         buffer.clear();
-        int totalBytesRead = socketChannel.read(buffer);
+        int totalBytesRead = 0;
 
-        while(true){
-            if(totalBytesRead <= 0){
+        do {
+            totalBytesRead += socketChannel.read(buffer);
+
+            if (totalBytesRead < 0){
+                return "EOF";
+            }
+
+            if (totalBytesRead == 0) {
                 return "";
             }
 
-            totalBytesRead += socketChannel.read(buffer);
-            if(buffer.get(totalBytesRead - 1) == 10){
-                break;
-            }
-        }
+        } while (buffer.get(totalBytesRead - 1) != 10);
 
         byte[] bytes = new byte[totalBytesRead];
         buffer.flip();
