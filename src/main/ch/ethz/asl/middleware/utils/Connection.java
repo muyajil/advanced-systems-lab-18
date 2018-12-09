@@ -34,12 +34,15 @@ public class Connection{
 
         while(true){
             totalBytesRead += socketChannel.read(buffer);
-            if(buffer.array()[totalBytesRead - 1] == 10){
+            if(buffer.get(totalBytesRead - 1) == 10){
                 break;
             }
         }
 
-        return new String(buffer.array()).substring(0, totalBytesRead);
+        byte[] bytes = new byte[totalBytesRead];
+        buffer.flip();
+        buffer.get(bytes);
+        return new String(bytes);
     }
 
     private String readNonBlocking(ByteBuffer buffer) throws IOException{
@@ -52,23 +55,24 @@ public class Connection{
             }
 
             totalBytesRead += socketChannel.read(buffer);
-
-            if(buffer.array()[totalBytesRead - 1] == 10){
+            if(buffer.get(totalBytesRead - 1) == 10){
                 break;
             }
         }
 
-        return new String(buffer.array()).substring(0, totalBytesRead);
+        byte[] bytes = new byte[totalBytesRead];
+        buffer.flip();
+        buffer.get(bytes);
+
+        return new String(bytes);
     }
 
     public void write(String message) throws IOException{
         ByteBuffer buffer = ByteBuffer.allocate(message.length());
-        buffer.clear();
         buffer.put(message.getBytes());
         buffer.flip();
         while(buffer.hasRemaining()){
             socketChannel.write(buffer);
         }
-        buffer.flip();
     }
 }
