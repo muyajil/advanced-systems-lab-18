@@ -82,9 +82,7 @@ public class Middleware implements Runnable{
         long startReceiving = MiddlewareRequest.getRealTimestamp(System.nanoTime());
         Connection client = (Connection) key.attachment();
         String cmd = client.read(readBuffer);
-        if (cmd.equals("EOF")){
-            deregisterClient(key);
-        } else if (!cmd.equals("")) {
+        if (!cmd.equals("")) {
             MiddlewareQueue.add(new MiddlewareRequest() {{
                 connection = client;
                 command = cmd;
