@@ -1,19 +1,19 @@
 {
   "memcached": {
-    "1": "storectgtrppwn6mjysshpublicip6.westus2.cloudapp.azure.com",
-    "2": "storectgtrppwn6mjysshpublicip7.westus2.cloudapp.azure.com",
-    "3": "storectgtrppwn6mjysshpublicip8.westus2.cloudapp.azure.com"
+    "1": "storehokgkrkqxjqn4sshpublicip6.westeurope.cloudapp.azure.com",
+    "2": "storehokgkrkqxjqn4sshpublicip7.westeurope.cloudapp.azure.com",
+    "3": "storehokgkrkqxjqn4sshpublicip8.westeurope.cloudapp.azure.com"
   },
   "middleware": {
-    "1": "storectgtrppwn6mjysshpublicip4.westus2.cloudapp.azure.com",
-    "2": "storectgtrppwn6mjysshpublicip5.westus2.cloudapp.azure.com"
+    "1": "storehokgkrkqxjqn4sshpublicip4.westeurope.cloudapp.azure.com",
+    "2": "storehokgkrkqxjqn4sshpublicip5.westeurope.cloudapp.azure.com"
   },
   "memtier": {
-    "1": "storectgtrppwn6mjysshpublicip1.westus2.cloudapp.azure.com",
-    "2": "storectgtrppwn6mjysshpublicip2.westus2.cloudapp.azure.com",
-    "3": "storectgtrppwn6mjysshpublicip3.westus2.cloudapp.azure.com",
-    "4": "storectgtrppwn6mjysshpublicip1.westus2.cloudapp.azure.com",
-    "5": "storectgtrppwn6mjysshpublicip2.westus2.cloudapp.azure.com",
-    "6": "storectgtrppwn6mjysshpublicip3.westus2.cloudapp.azure.com"
+    "1": "storehokgkrkqxjqn4sshpublicip1.westeurope.cloudapp.azure.com",
+    "2": "storehokgkrkqxjqn4sshpublicip2.westeurope.cloudapp.azure.com",
+    "3": "storehokgkrkqxjqn4sshpublicip3.westeurope.cloudapp.azure.com",
+    "4": "storehokgkrkqxjqn4sshpublicip1.westeurope.cloudapp.azure.com",
+    "5": "storehokgkrkqxjqn4sshpublicip2.westeurope.cloudapp.azure.com",
+    "6": "storehokgkrkqxjqn4sshpublicip3.westeurope.cloudapp.azure.com"
   }
 }

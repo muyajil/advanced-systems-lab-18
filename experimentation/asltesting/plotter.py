@@ -46,13 +46,13 @@ SERVER_TYPE = {
 YLIMS = {
     "set_tp_s": 17000,
     "get_tp_s": 17000,
-    "set_rt_ms": 30,
-    "get_rt_ms": 30,
-    "get_service_time_ms": 30,
-    "set_service_time_ms": 30,
-    "interactive_set_rt_ms": 30,
-    "interactive_get_rt_ms": 30,
-    "queue_length": 500
+    "set_rt_ms": 50,
+    "get_rt_ms": 50,
+    "get_service_time_ms": 50,
+    "set_service_time_ms": 50,
+    "interactive_set_rt_ms": 50,
+    "interactive_get_rt_ms": 50,
+    "queue_length": 300
 }
 
 
@@ -159,7 +159,8 @@ class Plotter(ABC):
         if plotted:
             plt.legend()
             plt.ylim(bottom=0, top=YLIMS[type])
-            path = os.path.join(plot_dir, self.get_server_type() + '_' + type + '.png')
+            file_name = self.get_server_type() + '_' + type + '.png'
+            path = os.path.join(plot_dir, file_name) # TODO: Save plots to submission dir
             plt.savefig(path)
             print("Generated plot {}".format(path))
 

@@ -36,10 +36,10 @@ if __name__ == '__main__':
                 mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
     elif args.install:
         installer = Installer()
-        # installer.set_private_key()
-        # installer.install_memtier()
+        installer.set_private_key()
+        installer.install_memtier()
         installer.install_memcached()
-        # installer.install_middleware()
+        installer.install_middleware()
     else:
         runner = TestRunner(args.repetitions, args.local)
         for test_config in test_configs:

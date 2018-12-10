@@ -32,9 +32,8 @@ class TestRunner(object):
             self.build_middleware()
 
             self.start_memcached_servers()
-            if not sum(map(lambda x: x[0], run_configuration['workloads'])) == len(run_configuration['workloads']) and \
-                sum(map(lambda x: x[1], run_configuration['workloads'])) == 0:
-                self.warm_up_caches()
+
+            self.warm_up_caches()
 
             for run in range(self.num_runs):
                 print('################################################################')
@@ -132,6 +131,7 @@ class TestRunner(object):
                 middleware_server_id=middleware_id,
                 num_servers=self.run_configuration['num_memcached_servers'],
                 memcached_ips=self.get_memcached_ips())
+            # print('\t\t' + command)
             self.client_manager.exec(command=command, server_type='middleware', server_id=middleware_id)
 
         time.sleep(5)
@@ -147,7 +147,8 @@ class TestRunner(object):
         print('\tStarting memcached servers...')
         for memcached_id in range(1, self.run_configuration['num_memcached_servers'] + 1):
             command = self.command_manager.get_memcached_run_command(memcached_id)
-            self.client_manager.exec(command=command, server_type='memcached', server_id=memcached_id, wait=True)
+            # print('\t' + command)
+            self.client_manager.exec(command=command, server_type='memcached', server_id=memcached_id)
 
     def stop_memcached_servers(self):
         print('\tStopping memcached...')
@@ -178,7 +179,7 @@ class TestRunner(object):
                                                                        workload="1:0",
                                                                        log_dir=fill_dir,
                                                                        memtier_server_id=1,
-                                                                       duration=10,
+                                                                       duration=300,
                                                                        internal_ip_middleware=middleware_ip)
         self.client_manager.exec(memtier_command, 'memtier', 1)
         output = self.client_manager.get_output('memtier', 1)
@@ -204,6 +205,7 @@ class TestRunner(object):
                     memtier_server_id=memtier_id,
                     log_dir=memtier_log_dir if self.local else paths.Absolute.REMOTE_LOGS)
                 self.client_manager.exec(command, 'memtier', memtier_id)
+                # print('\t\t' + command)
                 memtier_id += 1
 
     def start_memtier_memcached(self, num_clients_per_thread, workload, memtier_log_dir):
@@ -222,6 +224,7 @@ class TestRunner(object):
                     memtier_server_id=memtier_id,
                     log_dir=memtier_log_dir if self.local else paths.Absolute.REMOTE_LOGS)
                 self.client_manager.exec(command, 'memtier', memtier_id)
+                # print('\t\t' + command)
                 memtier_id += 1
 
     def wait_for_memtier_middleware(self):
