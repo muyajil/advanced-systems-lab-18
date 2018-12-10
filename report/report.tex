@@ -3,6 +3,7 @@
 \usepackage{fullpage}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{float}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -11,6 +12,8 @@
 
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
+
+\newcommand*{\escape}[1]{\texttt{\textbackslash#1}}
 
 \fancypagestyle{firstpagefooter} {
 	\lfoot{\tiny{Version: 25.09.2018}}
@@ -48,48 +51,235 @@
 
 \newpage
 
-\section*{Notes on writing the report \small{(remove this page for submission)}}
-
-The report for the lab needs not be extensive but it must be concise, complete, and correct. 
-Conciseness is important in terms of content and explanations, focusing on what has been done and explanations of the results. A long report is not necessarily a better report, especially if there are aspects of the design or the experiments that remain unexplained. Completeness implies that the report should give a comprehensive idea of what has been done by mentioning all key aspects of the design, experiments, and analysis. Aspects of the system, be it of its design or of its behavior, that remain unexplained detract from the credibility and grade of the report. Correctness is expected in terms of the explanations being logical and correlated with the numbers in the experiments and the design.
-
-Remember that this is a report about the system you have designed and built, about the experiments you have performed, and about how you interpret the results of the experiments and map them to your design and implementation. Please do not contact us seeking confirmation and assurances about, e.g., whether the report is sufficient, your interpretation of the data, validation of concrete aspects of your design, or whether you have done enough experiments. Making those decisions is your job and part of what the course will evaluate.
-
-The report will be graded together with the code and data submitted. \textbf{You will need at least 400 points to pass.} You might be called for a meeting in person to clarify aspects of the report or the system. By submitting the report, the code, and the data, you confirm that you have done the work on your own, the code has been developed by yourself, the data submitted comes from experiments your have done, you have written the report on your own, and you have not copied neither code nor text nor data from other sources.
-
-Each section will have to contain a description of the experimental setup, graphs (where applicable) and tables with most important numbers. More importantly, each experiment and modeling result should be accompanied by an explanation that puts the result in the context of your system. Without proper explanations you risk losing most of the points in the experimental sections. Furthermore, it is expected that the interactive law holds for all experiments. In case throughput and response time do not match, it is imperative that you explain why, otherwise you risk losing most of the points for the experiment in question.
-
-In each section you can find a table summarizing the system configuration that should to be used for that particular section. These configurations should be considered as a guideline to help you find interesting configurations where we expect your system to change its behaviour (e.g., going from an under-saturated to a saturated system). If you do not observe such a change inside that range of parameters, you should expand the range and run additional experiments outside the given range. In that case, ask your assistant for advise.
-
-This document provides you with the end-results that have to be included in the report. Please keep in mind that you are encouraged to provide additional graphs and experiments that help you in understanding your system. These additional experiments should be chosen such that they support the claims you make in your explanations and help you illustrate your point.
-
-\section*{Formatting guidelines}
-We expect you to use this template for the report, but you are free to use another text processor. Keep in mind the following:
-\begin{itemize}
-	\item  We expect you to submit \textbf{a single PDF that has the same section structure as this template, and answers all points we outline here}. If you use this file, you should remove this page with notes, and the short description provided by us at the beginning of sections.
-	\item Keep the same cover page as on this document and \textbf{fill out your name and legi number}. Leave the grading table empty.
-	\item Write your name and Legi number on every page.
-	\item The main text should be in \textbf{single-column format with 11pt font on A4 paper}. In case you don't start with one of the files provided by us, \textbf{for margins use 2.54 cm (1~inch) on all sides}.
-	\item The length of report should be at minimum 20, but should not exceed 35 pages (including figures, tables, etc.). 
-\end{itemize}
-
-\subsection*{How to Generate Load and Populate the Data}
-
-To generate load on the system, you will use memtier. When using memtier, you can specify two parameters: the number of threads (CT) and the number of virtual clients per thread (VC). The total number of virtual clients per memtier is CPM=CT*VC. When referring to ``number of clients'' in the system, it is the number of memtier instances times the number of virtual clients per instance, i.e., NumClients=NumMemtier*CPM.
-
-Increasing NumClients for experiments is always done by first fixing the number of virtual machines (VMs) and memtier instances and then changing the VC setting for all memtiers. In most cases it is enough to increase VC in large increments, unless you want to explore the behavior of your system around the inflexion point or other points which are of interest. In this case, you can use more fine-grained steps.
-
-For all experiments, use 2 CT per VM and between 1 and 32 VC per thread. We recommend to choose at least 6 points in this range. You will have to use up to 3 VMs for clients. In case you use a single middleware, set up each memtier instance with 2 CTs. If you use two middlewares, start two memtier instances per VM (each connected to one middleware) with 1 CT each.
-
-For all experiments conducted in this report, the value size has to be 4096\,Bs, and the number of keys 10000 (\texttt{--key-maximum=10000}). Before running experiments, populate the key-value store using a write-only workload long enough to write all keys at least once. All sets should have a long expiry time, to ensure that keys are not evicted during the experiments (e.g., \texttt{--expiry-range=9999-10000}). The loading of the memcached servers is not part of the measured performance, and the middleware has to be restarted after the initial population, before running experiments. 
-
-\subsection*{Plotting Data}
-The readability of your grades will be part of the grade. For all graphs the y-axis should start at 0, always use appropriate error metrics/bars, label both axis with units. For graphs that are related try to keep the same range on the x- and y-axis. Be careful when using log-scale on any of the axis. 
-\newpage
-
 \section{System Overview (75 pts)}
-
-Describe the implementation of your system and highlight design decisions relevant for the experiments. Explain how messages are parsed and how statistics are gathered in a multi-threaded setting. Provide figures containing all the threads and queues in your system (including the network and the memcached servers). Include illustrations that show how requests of different types are handled (e.g., components involved in processing the request and method calls). Please include all details necessary to understand artifacts and effects in your experiments that arise from your implementation choices.
+%
+\subsection{Class Overview}
+%
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{../illustrations/class_diagram.png}
+    \caption{Class Diagram}
+    \label{fig:class_diagram}
+\end{figure}
+%
+We will start by looking at a class diagram of the middleware.
+%
+In \ref{fig:class_diagram} we can see all the classes that compose the middleware.
+%
+The system is represented in its running state, i.e. all methods that are only used when starting up are omitted.
+%
+In the following paragraphs we will look at each of the components in detail.
+%
+\paragraph{\texttt{RunMW.java}}
+%
+This class has a single responsibility. It parses the command line arguments and runs the middleware thread using these.
+%
+\paragraph{\texttt{MiddlewareRequest.java}}
+%
+This class represents a request coming from a client.
+%
+The object holds all the relevant data of the request, i.e. all time measurements, whether or not the request was successful and the \texttt{Connection} object of the client that sent the request.
+%
+In this class we implement the parsing method, that scans the command string and populates fields in the object.
+%
+If the middleware is running in sharded mode, Multi-Get requests will be sharded into a list of commands.
+%
+\paragraph{\texttt{Middleware.java}}
+%
+This class represents the net thread of the system. Its responsibilities are first to accept client connections and register them so that we can start accepting requests. 
+%
+Second the thread also reads requests from already acccepted client connections and enqueues them in the \texttt{MiddlewareQueue}.
+%
+To avoid busy waiting and accessing client sockets that do not have data to read we use a \texttt{Selector}. 
+%
+Basically this is a mechanism that allows us to register connections and the selector will deliver only the connections that have data ready to read.
+%
+We also register the server socket with the selector and receive connections that are ready to be accepted.
+%
+Using this we can maximize the utilization of the CPU time used by the net thread.
+%
+We will look at the process of accepting connections and requests in detail in section~\ref{subsec:handlingRequests}
+%
+\paragraph{\texttt{MiddlewareQueue.java}}
+%
+In this middleware the \texttt{MiddlewareQueue} is a first class citizen, as are the workers and the net thread.
+%
+This decision is made based on the fact that the queue should not be owned by either the net or the worker threads.
+%
+The queue is not much more than a static wrapper around a \texttt{BlockingQueue}.
+%
+The access to take a request out of the queue is synchronized, so that we avoid processing the same request twice.
+%
+\paragraph{\texttt{Worker.java}}
+%
+In this class the actual processing of the request is done.
+%
+Depending on the type of the request that worker threads handle them differently. 
+%
+This will be adressed in detail in section~\ref{subsec:handlingRequests}.
+%
+In general a worker thread takes a request out of the \texttt{MiddlewareQueue}, after that the worker calls the parse method offered by \texttt{MiddlewareRequest}.
+%
+After that several new fields in the request object are populated, such as \texttt{RequestType} for example.
+%
+The parsed request will then be scheduled on the memcached servers depending on the server mode and request type.
+%
+The worker then waits for the responses from the memcached servers, parses the responses and then sends the appropriate response to the client.
+%
+After finishing processing the request the worker will then log the relevant fields for the analysis in a CSV format.
+%
+\paragraph{\texttt{Connection.java}}
+%
+The connection class is a convenience wrapper around a \texttt{SocketChannel}.
+%
+It represents both the client and server connections.
+%
+It allows us to specify if a connection should be blocking or not.
+%
+The goal of this class is that when using a connection we do not need to care about the configuration and how to read from the socket, instead we can just call the \texttt{read()} method and the different modes are handled internally.
+%
+\paragraph{\texttt{ServerManager.java}}
+%
+This class is used by the worker threads.
+%
+The \texttt{ServerManager} holds the \texttt{Connection} objects for the memcached servers.
+%
+This class offers the method \texttt{getConnection(int i)}, which will return the appropriate server connection based on the integer that is passed, such that the load is scheduled in a round robin fashion.
+%
+We will see in \ref{subsec:handlingRequests} how exactly that is handled based on the Id of the request.
+%
+Even if the request will go to all memcached servers it still makes sense to choose the first server to send the request to based on round robin.
+%
+This distributes the load even if we only have Set requests.
+%
+\subsection{Message Parsing}
+%
+As mentioned before the first thing the workers do with the request is parse it.
+%
+Parsing means mainly two things here, first we will determine the type of request we are looking, this tells us how to further handle the request.
+%
+Second, if applicable, we set the Multi-Get Size.
+%
+In the specific case of running the server in sharded mode and receiving a Multi-Get Request we will split the keys in the request and depending on the Multi-Get Size and number of servers populate a list of commands, this is known as "sharding" a command.
+%
+The number of shards is exactly \texttt{min(multiGetSize, numServers)}
+%
+\subsection{Response Parsing}
+%
+In two cases, specifically when handling sharded Multi-Get or Set requests we need to do some work before sending the request to the client.
+%
+\\
+%
+In the case of Set requests we need to make sure that the key was set on all the three servers.
+%
+That can be achieved by simply checking if all the responses equal \texttt{STORED\escape{r}\escape{n}}.
+%
+If that is the case we send the same response back to the client.
+%
+If not, it does not matter if we receive an error or if the key was simply not stored on some or all servers, we respond to the client with \texttt{NOT STORED\escape{r}\escape{n}} to let the client know that it should retry setting the key.
+%
+\\
+%
+In the case of sharded Multi-Get requests we need to combine the responses from all servers back to a single response and send it back to the client.
+%
+This is done by simply removing the end marker from all responses, concatenating them and then adding the end marker back at the end.
+%
+Finally we count the keys and record how many keys we have received to be able to calculate the miss rate and then we send the response on its way to the client.
+%
+\subsection{Logs}
+%
+To handle the logs in this multithreaded setting we use \texttt{log4j}.
+%
+The logs from all the workers are consolidated into a single CSV file per middleware, this is handled by \texttt{log4j}.
+%
+After finishing processing a request the workers will call the \texttt{toString()} method implemented by the \texttt{MiddlewareRequest} to produce a CSV log line.
+%
+This log line is passed to \texttt{log4j}.
+%
+\subsection{Queues}
+%
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{../illustrations/threads_and_queues.png}
+    \caption{Threads and Queues}
+    \label{fig:threads_and_queues}
+\end{figure}
+%
+In figure~\ref{fig:threads_and_queues} we can see an illustration of threads and queues in the system.
+%
+The arrow directions indicate the flow of requests.
+%
+Arrows connecting different VMs represent sockets, thus the all queues except the MiddlewareQueue refer to socket queues.
+%
+The illustration only shows one instance of a client, a server, and a worker thread.
+%
+In the full system there are three instances of clients and servers.
+%
+Depending on the configuration there are also many worker threads.
+%
+The queues and connections for these variable components are also replicated for the number of instances.
+%
+\subsection{Handling Requests}\label{subsec:handlingRequests}
+%
+In this section we go into detail on how the middleware handles incoming connections and how the different types of requests are handled by the middleware.
+%
+What follows are sequence diagrams that model the behaviour of the system for different request types.
+%
+Important to note here, that again the system is assumed to be in a running state, all the setup methods are executed.
+%
+Further there are some simplifications and abstractions in the diagrams to reduce clutter, for example not listing all arguments to a method call.
+%
+Also not all method calls are illustrated, only the ones that are relevant on how we handle different requests.
+%
+These abstractions should not impact the understanding of the middleware, I tried to design them as self explanatory as possible.
+%
+Finally the sequence diagrams model the handling of one request, therefore we model only one client and one worker.
+%
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{../illustrations/accepting_requests.png}
+    \caption{Accepting new connections and requests}
+    \label{fig:accepting_requests}
+\end{figure}
+%
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{../illustrations/handling_set.png}
+    \caption{Handling Set requests}
+    \label{fig:handling_set}
+\end{figure}
+%
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{../illustrations/handling_mget.png}
+    \caption{Handling Multi-Get requests}
+    \label{fig:handling_mget}
+\end{figure}
+%
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{../illustrations/handling_get.png}
+    \caption{Handling Get requests}
+    \label{fig:handling_get}
+\end{figure}
+%
+\subsection{Measurements}
+%
+Before getting into the analysis I want to lose a few words on the measurements and how they are handled.
+%
+\paragraph{No Middleware}
+%
+In this case we rely entirely on the output of \texttt{memtier\_benchmark}.
+%
+There we receive detailed numbers on number of requests and latency, however aggregated per one second intervals.
+%
+\paragraph{Middleware}
+%
+In this case we can use the detailed measurements from the middleware logs to produce the plots.
+%
+The measurements use \texttt{System.nanoTime()} in combination with \\ \texttt{System.currentTimeMillis()} to produce nanosecond Unix Timestamps.
+%
+We can compute the response time for each request and aggregate the average over all the requests.
+%
+When computing the average throughput we create a histogram based on the time a request was completed with the same number of bins as the duration of the experiment in seconds.
+%
+After that we sum these values over all middlewares and compute the average over the seconds the experiments was running.
+%
+All the plots use the 95\% percent confidence interval as an error measure.
 
 \section{Baseline without Middleware (75 pts)}
 
