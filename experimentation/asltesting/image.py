@@ -7,7 +7,7 @@ from PIL import Image
 def merge_images(image_files, target_file):
     thumb_width = 640
     thumb_height = 480
-    image_files = list(filter(lambda x: 'all.png' not in x, image_files))
+    image_files = list(filter(lambda x: 'all.png' not in x and 'png' in x, image_files))
     num_images = len(image_files)
     num_cols = 4
     num_rows = int(np.ceil(num_images / num_cols))
