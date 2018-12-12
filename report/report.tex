@@ -285,6 +285,14 @@ All the plots use the 95\% percent confidence interval as an error measure.
 %
 \section{Baseline without Middleware (75 pts)}
 %
+\paragraph{Sanity Checks}
+%
+In the experiments where we can instrument the middleware we can compute a reasonably good estimate of the think time and therefore produce plots which show that the Interactive Response Time Law holds.
+%
+In this section however we do not have this information.
+%
+Here we used pings to get a rough estimate on the think time and used this to manually check if the response time holds for the data in the experiments using one and two memcached servers.
+%
 \subsection{One Server}
 %
 \subsubsection{System Setup}
@@ -299,11 +307,11 @@ For this experiment we will use the following system setup:
 %
 We vary the number of virtual clients per thread from 1 to 32.
 %
-\subsubsection{Objective}
+\subsubsection{Hypothesis}
 %
 The objective of this experiment is to find out how much load a single server can handle.
 %
-This means we will increase the number of virutal clients until the memcached server is the bottleneck of the system.
+We expect that this can be accomplished since we have 3 load generating machines for one server.
 %
 \subsubsection{Explanation}
 %
@@ -432,15 +440,15 @@ For this experiment we will use the following system setup:
 %
 We vary the number of virtual clients per thread from 1 to 32.
 %
-\subsubsection{Objective}
+\subsubsection{Hypothesis}
 %
-In this experiment we turn to the clients.
+Now we have two servers in this experiment and only one load generating machine.
 %
-The idea is to find out how much requests the clients can produce.
+Since before the server was the bottleneck in the last experiment we expect the server to be able to handle twice the read load than in the previous experiment.
 %
-Assuming the clients will not be the bottleneck of the system we should be able to double the throughput from the previous experiments.
+For a write load the server performed very well, and we needed a lot of clients to saturate the servers.
 %
-If the clients will be the bottleneck we expect the throughput of the system to be lower than in the previous section.
+In this case we expect memtier to be the bottleneck of the system.
 %
 \subsubsection{Explanation}
 %
@@ -520,16 +528,24 @@ When we look at figure~\ref{fig:two_servers_get_rt} we can see that after 8 clie
 %
 In this case it is really difficult to conclude with certainty whether the server or memtier is the bottleneck, in this case the components are matched together very well.
 %
+Still, there is one argument that paints memtier as the bottleneck.
+%
+Again we can compare the response time we measure with two servers and compare it to the response time when the memcached server was saturated.
+%
+The response time in the one server case is a lot higher compared to the response time in this experiment. 
+%
+This argument lets us conclude fairly certain that memtier must be the bottleneck, since we would measure similar response times as before with saturated server.
+%
 \subsection{Summary}
 
 Based on the experiments above, fill out the following table:
 
 \begin{center}
 	{Maximum throughput of different VMs.}
-	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
+	\begin{tabular}{|l|p{3cm}|p{3cm}|p{4cm}|}
 		\hline                        & Read-only workload & Write-only workload & Configuration gives max. throughput \\ 
 		\hline One memcached server   & 2875 (4 Clients)   & 15643 (96 Clients)  & Write-Only, 96 Clients       \\ 
-		\hline One load generating VM & 5810 (8 Clients)  & 5920 (12 Clients)   & Read-Only, 12 Clients         \\ 
+		\hline One load generating VM & 5810 (8 Clients)  & 5920 (12 Clients)   & Write-Only, 12 Clients         \\ 
 		\hline 
 	\end{tabular}
 \end{center}
@@ -587,15 +603,19 @@ For this experiment we will use the following system setup:
 %
 We vary the number of virtual clients per thread from 1 to 48.
 %
-\subsubsection{Objective}
+\subsubsection{Hypothesis}
 %
-Similar to the first experiment we want to find out how much load a single middleware can handle. 
-%
-Again we will increase the number of virtual clients until the middleware is the bottleneck of the system.
+Similar to the first experiment we will find out how much load a single middleware can handle
 %
 We assume for now that one memcached server is more performing than the middleware and therefore it should not be a problem that we only use one server.
 %
 We will see later if this assumption is justified.
+%
+In this experiment we only use one server, therefore the middleware should not generate any overhead for synchronizing \texttt{SET} requests across multiple servers.
+%
+Therefore we expect also in this case that \texttt{SET} requests will have a higher throughput than \texttt{GET} requests.
+%
+Also as we increase the number of worker threads, more clients should be needed to saturate the system.
 %
 \subsubsection{Explanation}
 %
@@ -605,32 +625,25 @@ We will see later if this assumption is justified.
 	\centering
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/memtier_set_tp_s.png}
-        \caption{\texttt{SET} Throughput measured by memtier}
-        \label{fig:one_middleware_set_tp_mt}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/middleware_set_tp_s.png}
+        \caption{\texttt{SET} Throughput}
+        \label{fig:one_middleware_set_tp_mw}
     \end{minipage}\hfill
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/memtier_set_rt_ms.png}
-        \caption{\texttt{SET} Response Time measured by memtier}
-        \label{fig:one_middleware_set_rt_mt}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/middleware_set_rt_ms.png}
+        \caption{\texttt{SET} Response Time}
+        \label{fig:one_middleware_set_rt_mw}
     \end{minipage}
 \end{figure}
 %
 \begin{figure}[H]
 	\centering
     \begin{minipage}{0.5\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_set_tp_s.png}
-        \caption{\texttt{SET} Throughput measured by middleware}
-        \label{fig:one_middleware_set_tp_mw}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/middleware_interactive_set_rt_ms.png}
+        \caption{\texttt{SET} Response time according to Interactive Law based on Throughput}
+        \label{fig:one_middleware_set_rt_it}
     \end{minipage}\hfill
-    \begin{minipage}{0.5\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_set_rt_ms.png}
-        \caption{\texttt{SET} Response Time measured by middleware}
-        \label{fig:one_middleware_set_rt_mw}
-    \end{minipage}
 \end{figure}
 %
 \paragraph{Read-Only Workload}
@@ -639,32 +652,103 @@ We will see later if this assumption is justified.
 	\centering
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/memtier_get_tp_s.png}
-        \caption{\texttt{SET} Throughput measured by memtier}
-        \label{fig:one_middleware_set_tp_mt}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/middleware_get_tp_s.png}
+        \caption{\texttt{GET} Throughput}
+        \label{fig:one_middleware_set_tp_mw}
     \end{minipage}\hfill
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/memtier_get_rt_ms.png}
-        \caption{\texttt{SET} Response Time measured by memtier}
-        \label{fig:one_middleware_set_rt_mt}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/middleware_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time}
+        \label{fig:one_middleware_set_rt_mw}
     \end{minipage}
 \end{figure}
 %
 \begin{figure}[H]
 	\centering
     \begin{minipage}{0.5\textwidth}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/middleware_interactive_get_rt_ms.png}
+        \caption{\texttt{GET} Response time according to Interactive Law based on Throughput}
+        \label{fig:one_middleware_get_rt_it}
+    \end{minipage}\hfill
+\end{figure}
+%
+\subsection{Two Middlewares}
+%
+\subsubsection{System Setup}
+%
+For this experiment we will use the following system setup:
+%
+\begin{itemize}
+	\item 3 client machines with 2 memtier instances per machine. Each instance of memtier runs with 1 threads.
+	\item 2 middlewares
+	\item 1 memcached server
+\end{itemize}
+%
+We vary the number of virtual clients per thread from 1 to 48.
+%
+\subsubsection{Hypothesis}
+%
+We expect this configuration to handle twice as many requests as with one middleware before becoming saturated, assuming the server will not bottleneck the system.
+%
+Again we only use one server, therefore we expect again in this case that \texttt{SET} requests will have a higher throughput than \texttt{GET} requests.
+%
+Further as we increase the number of worker threads, more clients should be needed to saturate the system.
+%
+\subsubsection{Explanation}
+%
+\paragraph{Write-Only Workload}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_set_tp_s.png}
+        \caption{\texttt{SET} Throughput}
+        \label{fig:two_middlewares_set_tp_mw}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_set_rt_ms.png}
+        \caption{\texttt{SET} Response Time}
+        \label{fig:two_middlewares_set_rt_mw}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_interactive_set_rt_ms.png}
+        \caption{\texttt{SET} Response time according to Interactive Law based on Throughput}
+        \label{fig:two_middlewares_set_rt_it}
+    \end{minipage}\hfill
+\end{figure}
+%
+\paragraph{Read-Only Workload}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_get_tp_s.png}
-        \caption{\texttt{GET} Throughput measured by middleware}
-        \label{fig:one_middleware_set_tp_mw}
+        \caption{\texttt{GET} Throughput measured}
+        \label{fig:two_middlewares_set_tp_mw}
     \end{minipage}\hfill
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_get_rt_ms.png}
-        \caption{\texttt{GET} Response Time measured by middleware}
-        \label{fig:one_middleware_set_rt_mw}
+        \caption{\texttt{GET} Response Time measured}
+        \label{fig:two_middlewares_set_rt_mw}
     \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_interactive_get_rt_ms.png}
+        \caption{\texttt{GET} Response time according to Interactive Law based on Throughput}
+        \label{fig:two_middlewares_get_rt_it}
+    \end{minipage}\hfill
 \end{figure}
 
 
@@ -686,49 +770,6 @@ We will see later if this assumption is justified.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\subsection{Two Middlewares}
-
-Connect three load generator machines (two instances of memtier with CT=1) to two middlewares and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time as measured in the middleware.
-
-Repeat this experiment for different number of worker threads inside the middleware: 8, 16, 32, 64.
-
-\begin{center}
-	\scriptsize{
-		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 1                        \\ 
-			\hline Number of client machines        & 3                        \\ 
-			\hline Instances of memtier per machine & 2                        \\ 
-			\hline Threads per memtier instance     & 1                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
-			\hline Workload                         & Write-only and Read-only \\
-			\hline Multi-Get behavior               & N/A                      \\
-			\hline Multi-Get size                   & N/A                      \\
-			\hline Number of middlewares            & 2                        \\
-			\hline Worker threads per middleware    & [8..64]                  \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
-			\hline 
-		\end{tabular}
-	} 
-\end{center}
-
-\subsubsection{Explanation}
-
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
 
 \subsection{Summary}
 
