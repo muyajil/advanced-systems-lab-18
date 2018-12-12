@@ -9,7 +9,7 @@
     "num_client_machines": 1,
     "num_memtier_per_client": 2,
     "num_threads_per_memtier": 1,
-    "num_clients_per_thread_range": [1, 2, 4, 8, 16, 32],
+    "num_clients_per_thread_range": [1, 2, 4, 8, 16, 32, 48],
 
     "sharded": false,
 
