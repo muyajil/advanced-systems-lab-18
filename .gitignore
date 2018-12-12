@@ -13,3 +13,4 @@ experimentation/fill/*
 *.log
 *.synctex.gz
 *.out
+*.tdo
