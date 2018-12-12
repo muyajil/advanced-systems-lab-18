@@ -47,7 +47,7 @@ YLIMS = {
     "set_tp_s": 17000,
     "get_tp_s": 17000,
     "set_rt_ms": 50,
-    "get_rt_ms": 50,
+    "get_rt_ms": 100,
     "get_service_time_ms": 50,
     "set_service_time_ms": 50,
     "interactive_set_rt_ms": 50,
@@ -128,7 +128,7 @@ class Plotter(ABC):
             if not df['avg_' + type].mean() == 0.0:
                 plotted = True
 
-                if type in {'set_rt_ms', 'get_rt_ms'}:
+                if type in {'set_rt_ms', 'get_rt_ms'} and 'full_system_read' in plot_dir:
                     plt.errorbar(df.index.values,
                                  df['avg_' + type],
                                  marker='x',
@@ -160,7 +160,7 @@ class Plotter(ABC):
             plt.legend()
             plt.ylim(bottom=0, top=YLIMS[type])
             file_name = self.get_server_type() + '_' + type + '.png'
-            path = os.path.join(plot_dir, file_name) # TODO: Save plots to submission dir
+            path = os.path.join(plot_dir, file_name)
             plt.savefig(path)
             print("Generated plot {}".format(path))
 

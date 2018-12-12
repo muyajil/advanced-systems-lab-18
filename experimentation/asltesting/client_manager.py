@@ -13,7 +13,9 @@ class ClientManager(object):
             "middleware": {},
             "memtier": {}
         }
-        for server_type in self.server_config:
+
+    def init_connections(self):
+        for server_type in ["memcached", "memtier"]:
             for server_id in self.server_config[server_type]:
                 self.clients[server_type][server_id] = self.get_or_create_client(server_type, server_id)
 

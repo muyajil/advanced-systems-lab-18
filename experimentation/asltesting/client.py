@@ -126,7 +126,10 @@ class SSHClient(Client):
             return stdout.read().decode('utf-8')
 
     def exec_and_forget(self, command):
-        self.command = command.split(' ')[0]
+        if '&&' in command:
+            self.command = command.split(" && ")[-1].split(" ")[0]
+        else:
+            self.command = command.split(' ')[0]
         self.stdin, self.stdout, self.stderr = self.client.exec_command(command)
         time.sleep(1)
         if self.stdout.channel.exit_status_ready():

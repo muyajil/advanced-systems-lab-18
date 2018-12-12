@@ -26,6 +26,8 @@ class TestRunner(object):
                                len(run_configuration['num_clients_per_thread_range']) * \
                                self.num_runs
 
+            self.client_manager.init_connections()
+
             print('////////////////////////////////////////////////////////////////')
             print('Running new experiment {}'.format(run_configuration['name']))
 
@@ -40,14 +42,12 @@ class TestRunner(object):
                 print('\tStarting iteration {}...'.format(run))
                 self.run_single_test(run, run_configuration, base_log_dir)
 
-            self.stop_memcached_servers()
-            # self.client_manager.close()
-
         except Exception as e:
             self.stop_middleware()
             raise e
         finally:
             self.stop_memcached_servers()
+            self.client_manager.close()
 
     def run_single_test(self, iteration, run_configuration, base_log_dir):
 
@@ -134,7 +134,7 @@ class TestRunner(object):
             # print('\t\t' + command)
             self.client_manager.exec(command=command, server_type='middleware', server_id=middleware_id)
 
-        time.sleep(5)
+        time.sleep(10)
 
     def stop_middleware(self):
         print('\t\tStopping middleware...')
@@ -225,7 +225,10 @@ class TestRunner(object):
                     log_dir=memtier_log_dir if self.local else paths.Absolute.REMOTE_LOGS)
                 self.client_manager.exec(command, 'memtier', memtier_id)
                 # print('\t\t' + command)
-                memtier_id += 1
+                if self.run_configuration['num_memcached_servers'] == 2 and self.run_configuration['num_client_machines'] == 1:
+                    memtier_id += 3
+                else:
+                    memtier_id += 1
 
     def wait_for_memtier_middleware(self):
         print('\t\tWaiting for memtier...')
@@ -241,7 +244,10 @@ class TestRunner(object):
         for _ in range(1, self.run_configuration['num_client_machines'] + 1):
             for _ in range(1, self.run_configuration['num_memcached_servers'] + 1):
                 self.wait_for_memtier(memtier_id)
-                memtier_id += 1
+                if self.run_configuration['num_memcached_servers'] == 2 and self.run_configuration['num_client_machines'] == 1:
+                    memtier_id += 3
+                else:
+                    memtier_id += 1
 
     def wait_for_memtier(self, memtier_id):
         output = self.client_manager.get_output('memtier', memtier_id)
