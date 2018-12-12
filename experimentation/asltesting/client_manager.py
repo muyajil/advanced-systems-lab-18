@@ -14,10 +14,15 @@ class ClientManager(object):
             "memtier": {}
         }
 
-    def init_connections(self):
-        for server_type in ["memcached", "memtier"]:
-            for server_id in self.server_config[server_type]:
-                self.clients[server_type][server_id] = self.get_or_create_client(server_type, server_id)
+    def init_connections(self, run_configuration):
+        for server_id in range(1, run_configuration['num_memcached_servers'] + 1):
+            self.clients['memcached'][server_id] = self.get_or_create_client('memcached', server_id)
+
+        for server_id in range(1, run_configuration['num_middlewares'] + 1):
+            self.clients['middleware'][server_id] = self.get_or_create_client('middleware', server_id)
+
+        for server_id in range(1, run_configuration['num_client_machines'] + 1):
+            self.clients['middleware'][server_id] = self.get_or_create_client('middleware', server_id)
 
     def create_client(self, server_type, server_id):
         if self.local:
@@ -33,7 +38,7 @@ class ClientManager(object):
     def get_or_create_client(self, server_type, server_id):
         server_id = str(server_id)
 
-        if server_id not in self.clients[server_type]:
+        if server_id not in self.clients[server_type] or self.clients[server_type][server_id] is None:
             self.clients[server_type][server_id] = self.create_client(server_type, server_id)
 
         return self.clients[server_type][server_id]

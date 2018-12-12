@@ -26,7 +26,7 @@ class TestRunner(object):
                                len(run_configuration['num_clients_per_thread_range']) * \
                                self.num_runs
 
-            self.client_manager.init_connections()
+            self.client_manager.init_connections(run_configuration)
 
             print('////////////////////////////////////////////////////////////////')
             print('Running new experiment {}'.format(run_configuration['name']))
