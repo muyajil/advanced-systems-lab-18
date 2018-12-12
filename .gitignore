@@ -14,3 +14,5 @@ experimentation/fill/*
 *.synctex.gz
 *.out
 *.tdo
+.idea.bkp/*
+*.ipynb*
