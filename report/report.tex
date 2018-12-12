@@ -297,7 +297,7 @@ For this experiment we will use the following system setup:
 	\item 1 memcached server
 \end{itemize}
 %
-We vary the number of virtual clients per thread from 1 to 40.
+We vary the number of virtual clients per thread from 1 to 32.
 %
 \subsubsection{Objective}
 %
@@ -338,15 +338,17 @@ In general we will try to use the two conditions above to determine the point at
 %
 \todo{interactive law check, maybe print a latex table when generating the plot with already filled in values for all experiments.}
 %
-As we can see in figure~\ref{fig:one_server_set_tp} we can achieve approximately 16000 ops/sec before the server is completely saturated, using XX\todo{real number} clients.
+As we can see in figure~\ref{fig:one_server_set_tp} we can achieve approximately 16000 ops/sec before the server is completely saturated, using 96 clients.
 %
-\todo{write about the response time plot, can we see there as well the point of saturation?}
+In figure~\ref{fig:one_server_set_rt} it is more difficult to identify the point at which the system is saturated. 
+%
+However we can see a small increase in the slope of the response time at 96 clients, which supports the claim done based on the throughput plot.
 %
 Oversaturation does not occur in this experiment.
 %
 Since this is the very first experiment we cannot yet compare it to much.
 %
-The take away message here is that one memcached server can handle up to approximately 16000 write ops/sec and is saturated when using XX\todo{real number} virtual clients per thread.
+The take away message here is that one memcached server can handle up to approximately 16000 write ops/sec and is saturated when using 96 clients.
 %
 Also we conclude definitely that memcached is the bottleneck of the system in this configuration and using this specific workload.
 %
@@ -386,7 +388,9 @@ The saturation can is clearly depicted in figure~\ref{fig:one_server_get_tp}.
 %
 This hypothesis is also supported by the response time, we can see that from the start the response time increases linearly, without increasing the slope at some point during the experiment.
 %
-Oversaturation does not occur in this experiment even when using 240 virtual clients.
+Oversaturation does not occur in this experiment even when using 192 virtual clients.
+%
+\\
 %
 Since we could not identify an undersaturated phase of the system we ran an additional experiment.
 %
@@ -394,7 +398,25 @@ The setup was that we used only one load generating machine with only one instan
 %
 The virtual clients were varied from 1 to 8, since above we saw an saturation at 6 clients we would expect this experiment to reveal an undersaturated memcached server.
 %
-\missingfigure{Include Response Time and Throughput plot for reduced one server config}
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_1_1_one_server_reduced/0-1/memtier_get_tp_s.png}
+        \caption{\texttt{GET} Throughput}
+        \label{fig:one_server_reduced_get_tp}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_1_1_one_server_reduced/0-1/memtier_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time}
+        \label{fig:one_server_reduced_get_rt}
+    \end{minipage}
+\end{figure}
+%
+As we can see rather clearly in figure~\ref{fig:one_server_reduced_get_tp} the memcached server is already saturated using only 2 clients in total.
+%
+Also in figure~\ref{fig:one_server_reduced_get_rt} we can identify the response time starting to increase after two clients.
 %
 \subsection{Two Servers}
 %
@@ -408,7 +430,7 @@ For this experiment we will use the following system setup:
 	\item 2 memcached servers
 \end{itemize}
 %
-We vary the number of virtual clients per thread from 1 to 48.
+We vary the number of virtual clients per thread from 1 to 32.
 %
 \subsubsection{Objective}
 %
@@ -494,7 +516,9 @@ This is the exact value we expected from memcached, however it is also the maxim
 %
 Therefore it is difficult to say exaclty whether memtier or the memcached server are the bottleneck of this system.
 %
-\todo{Write about Response Time plot, maybe this indicates a better way of distinguishing between memcached or memtier as a bottleneck}
+When we look at figure~\ref{fig:two_servers_get_rt} we can see that after 8 clients there is an increase in slope, which would indicate that the servers are the bottleneck, since the response time should, in theory, stay constant when the system is undersaturated.
+%
+In this case it is really difficult to conclude with certainty whether the server or memtier is the bottleneck, in this case the components are matched together very well.
 %
 \subsection{Summary}
 
@@ -504,15 +528,49 @@ Based on the experiments above, fill out the following table:
 	{Maximum throughput of different VMs.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
 		\hline                        & Read-only workload & Write-only workload & Configuration gives max. throughput \\ 
-		\hline One memcached server   &                    &                     &                                     \\ 
-		\hline One load generating VM &                    &                     &                                     \\ 
+		\hline One memcached server   & 2875 (4 Clients)   & 15643 (96 Clients)  & Write-Only, 96 Clients       \\ 
+		\hline One load generating VM & 5810 (8 Clients)  & 5920 (12 Clients)   & Read-Only, 12 Clients         \\ 
 		\hline 
 	\end{tabular}
 \end{center}
-
-
-Write at least two paragraphs about how both results relate. Describe what is the bottleneck of this setup is. If the maximum throughput for both experiments is the same, explain why. If it is not the case, explain why not. Write down key take-away messages about the behaviour of the memtier clients and the memcached servers.
-
+%
+When we look at the Read-only workload we can see that when we double the amount of servers from one to two the throughput also doubles. 
+%
+This indicates again that in the first experiment the server is the bottleneck.
+%
+Further we can see that one server is already saturated with 4 clients, whereas when using two servers we can handle up to 8 clients with approximately double the requests before being saturated, which again supports the conclusion that the server was the bottleneck in the first experiment.
+%
+\\
+%
+Looking at the Write-only workload it looks a bit different.
+%
+We can see that when using less client machines the throughput decreases drastically, even if we use two servers.
+%
+As mentioned before this indicates that a client machine cannot generate more load.
+%
+This is because the clients will likely reach their hardware limit at some point, the resources of one machine are shared by too many virtual clients.
+%
+\\
+%
+Important to mention is that the numbers above to not always correspond to the absolute maximum throughput observed during the experiments.
+%
+For example the Write-only workload recorded a maximum throughput of 15850 at 192 clients, however we know that the system was saturated already with 96 clients, therefore the maximum throughput at 192 has little meaning.
+%
+\\
+%
+Summarizing the sections up to now we have a few key take away messages:
+%
+\begin{itemize}
+	\item One memcached server alone can handle a lot more \texttt{SET} requests than \texttt{GET} requests, more than 5 times as much.
+	\item One memcached server alone can handle about 16000 \texttt{SET} ops/sec and approximately 3000 \texttt{GET} ops/sec
+	\item One client machine alone can generate up to approximately 6000 ops/sec
+	\item For one client it does not really matter if it is generating \texttt{GET} or \texttt{SET} requests, when measuring how much ops/sec can be produced.
+\end{itemize}
+%
+The absolute numbers here should only be used as an approximate measure, even just restarting the VMs can produce different results. 
+%
+The idea is to get a sense on the relation between the different configurations and approximate numbers.
+%
 \section{Baseline with Middleware (90 pts)}
 %
 \subsection{One Middleware}
@@ -529,33 +587,119 @@ For this experiment we will use the following system setup:
 %
 We vary the number of virtual clients per thread from 1 to 48.
 %
-
-Connect three load generator machines (one instance of memtier with CT=2) to a single middleware and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time measured in the middleware.
-
-Repeat this experiment for different number of worker threads inside the middleware: 8, 16, 32, 64.
-
-\begin{center}
-	\scriptsize{
-		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 1                        \\ 
-			\hline Number of client machines        & 3                        \\ 
-			\hline Instances of memtier per machine & 1                        \\ 
-			\hline Threads per memtier instance     & 2                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
-			\hline Workload                         & Write-only and Read-only \\
-			\hline Multi-Get behavior               & N/A                      \\
-			\hline Multi-Get size                   & N/A                      \\
-			\hline Number of middlewares            & 1                        \\
-			\hline Worker threads per middleware    & [8..64]                  \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
-			\hline 
-		\end{tabular}
-	} 
-\end{center}
-
+\subsubsection{Objective}
+%
+Similar to the first experiment we want to find out how much load a single middleware can handle. 
+%
+Again we will increase the number of virtual clients until the middleware is the bottleneck of the system.
+%
+We assume for now that one memcached server is more performing than the middleware and therefore it should not be a problem that we only use one server.
+%
+We will see later if this assumption is justified.
+%
 \subsubsection{Explanation}
+%
+\paragraph{Write-Only Workload}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/memtier_set_tp_s.png}
+        \caption{\texttt{SET} Throughput measured by memtier}
+        \label{fig:one_middleware_set_tp_mt}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/memtier_set_rt_ms.png}
+        \caption{\texttt{SET} Response Time measured by memtier}
+        \label{fig:one_middleware_set_rt_mt}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_set_tp_s.png}
+        \caption{\texttt{SET} Throughput measured by middleware}
+        \label{fig:one_middleware_set_tp_mw}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_set_rt_ms.png}
+        \caption{\texttt{SET} Response Time measured by middleware}
+        \label{fig:one_middleware_set_rt_mw}
+    \end{minipage}
+\end{figure}
+%
+\paragraph{Read-Only Workload}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/memtier_get_tp_s.png}
+        \caption{\texttt{SET} Throughput measured by memtier}
+        \label{fig:one_middleware_set_tp_mt}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/memtier_get_rt_ms.png}
+        \caption{\texttt{SET} Response Time measured by memtier}
+        \label{fig:one_middleware_set_rt_mt}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_get_tp_s.png}
+        \caption{\texttt{GET} Throughput measured by middleware}
+        \label{fig:one_middleware_set_tp_mw}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time measured by middleware}
+        \label{fig:one_middleware_set_rt_mw}
+    \end{minipage}
+\end{figure}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \subsection{Two Middlewares}
 
