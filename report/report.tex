@@ -50,6 +50,8 @@
 \thispagestyle{firstpagefooter}
 
 \newpage
+\listoftodos
+\newpage
 
 \section{System Overview (75 pts)}
 %
@@ -81,7 +83,7 @@ The object holds all the relevant data of the request, i.e. all time measurement
 %
 In this class we implement the parsing method, that scans the command string and populates fields in the object.
 %
-If the middleware is running in sharded mode, Multi-Get requests will be sharded into a list of commands.
+If the middleware is running in sharded mode, \texttt{MULTI-GET} requests will be sharded into a list of commands.
 %
 \paragraph{\texttt{Middleware.java}}
 %
@@ -145,7 +147,7 @@ The \texttt{ServerManager} holds the \texttt{Connection} objects for the memcach
 %
 This class offers the method \texttt{getConnection(int i)}, which will return the appropriate server connection based on the integer that is passed, such that the load is scheduled in a round robin fashion.
 %
-We will see in \ref{subsec:handlingRequests} how exactly that is handled based on the Id of the request.
+We will see in section~\ref{subsec:handlingRequests} how exactly that is handled based on the Id of the request.
 %
 Even if the request will go to all memcached servers it still makes sense to choose the first server to send the request to based on round robin.
 %
@@ -157,19 +159,19 @@ As mentioned before the first thing the workers do with the request is parse it.
 %
 Parsing means mainly two things here, first we will determine the type of request we are looking, this tells us how to further handle the request.
 %
-Second, if applicable, we set the Multi-Get Size.
+Second, if applicable, we set the \texttt{MULTI-GET} Size.
 %
-In the specific case of running the server in sharded mode and receiving a Multi-Get Request we will split the keys in the request and depending on the Multi-Get Size and number of servers populate a list of commands, this is known as "sharding" a command.
+In the specific case of running the server in sharded mode and receiving a \texttt{MULTI-GET} Request we will split the keys in the request and depending on the \texttt{MULTI-GET} Size and number of servers populate a list of commands, this is known as "sharding" a command.
 %
 The number of shards is exactly \texttt{min(multiGetSize, numServers)}
 %
 \subsection{Response Parsing}
 %
-In two cases, specifically when handling sharded Multi-Get or Set requests we need to do some work before sending the request to the client.
+In two cases, specifically when handling sharded \texttt{MULTI-GET} or \texttt{SET} requests we need to do some work before sending the request to the client.
 %
 \\
 %
-In the case of Set requests we need to make sure that the key was set on all the three servers.
+In the case of \texttt{SET} requests we need to make sure that the key was set on all the three servers.
 %
 That can be achieved by simply checking if all the responses equal \texttt{STORED\escape{r}\escape{n}}.
 %
@@ -179,7 +181,7 @@ If not, it does not matter if we receive an error or if the key was simply not s
 %
 \\
 %
-In the case of sharded Multi-Get requests we need to combine the responses from all servers back to a single response and send it back to the client.
+In the case of sharded \texttt{MULTI-GET} requests we need to combine the responses from all servers back to a single response and send it back to the client.
 %
 This is done by simply removing the end marker from all responses, concatenating them and then adding the end marker back at the end.
 %
@@ -241,19 +243,19 @@ Finally the sequence diagrams model the handling of one request, therefore we mo
 %
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{../illustrations/handling_set.png}
-    \caption{Handling Set requests}
+    \caption{Handling \texttt{SET} requests}
     \label{fig:handling_set}
 \end{figure}
 %
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{../illustrations/handling_mget.png}
-    \caption{Handling Multi-Get requests}
+    \caption{Handling \texttt{MULTI-GET} requests}
     \label{fig:handling_mget}
 \end{figure}
 %
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{../illustrations/handling_get.png}
-    \caption{Handling Get requests}
+    \caption{Handling \texttt{GET} requests}
     \label{fig:handling_get}
 \end{figure}
 %
@@ -280,71 +282,220 @@ When computing the average throughput we create a histogram based on the time a 
 After that we sum these values over all middlewares and compute the average over the seconds the experiments was running.
 %
 All the plots use the 95\% percent confidence interval as an error measure.
-
+%
 \section{Baseline without Middleware (75 pts)}
-
-In this experiments you study the performance characteristics of the memtier clients and memcached servers.
-
+%
 \subsection{One Server}
-
-Both, for a read-only and write-only workload plot the throughput and the response time as a function of NumClients. All clients are connected to a single memcached instance.
-
-Use 3 load generating VMs, with one memtier (CT=2) each, and vary the number of virtual clients (VC) per memtier thread between 1 and 32. Show how the behavior of the server changes as we add more clients.
-
-\begin{center}
-	\scriptsize{
-		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 1                        \\ 
-			\hline Number of client machines        & 3                        \\ 
-			\hline Instances of memtier per machine & 1                        \\ 
-			\hline Threads per memtier instance     & 2                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
-			\hline Workload                         & Write-only and Read-only \\
-			\hline Multi-Get behavior               & N/A                      \\
-			\hline Multi-Get size                   & N/A                      \\
-			\hline Number of middlewares            & N/A                      \\
-			\hline Worker threads per middleware    & N/A                      \\
-			\hline Repetitions                      & 3 or more                \\ 
-			\hline 
-		\end{tabular}
-	} 
-\end{center}
-
+%
+\subsubsection{System Setup}
+%
+For this experiment we will use the following system setup:
+%
+\begin{itemize}
+	\item 3 client machines with 1 memtier instance per machine. Each instance of memtier runs with 2 threads.
+	\item No middlewares
+	\item 1 memcached server
+\end{itemize}
+%
+We vary the number of virtual clients per thread from 1 to 40.
+%
+\subsubsection{Objective}
+%
+The objective of this experiment is to find out how much load a single server can handle.
+%
+This means we will increase the number of virutal clients until the memcached server is the bottleneck of the system.
+%
 \subsubsection{Explanation}
-
-Describe in which phase the memcached servers are under-saturated, saturated, or over-saturated. Describe how throughput and response time correlate. Explain what further conclusions can be drawn from the experiment.
-
-
+%
+\paragraph{Write-Only Workload}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_1_one_server/1-0/memtier_set_tp_s.png}
+        \caption{\texttt{SET} Throughput}
+        \label{fig:one_server_set_tp}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_1_one_server/1-0/memtier_set_rt_ms.png}
+        \caption{\texttt{SET} Response Time}
+        \label{fig:one_server_set_rt}
+    \end{minipage}
+\end{figure}
+%
+As mentioned in the objective we want to find out how much, in this case write requests, one memcached server can handle, i.e. how many clients do we need such that the server is saturated.
+%
+We can see that the server is saturated by two things:
+%
+\begin{itemize}
+	\item The throughput of the system does not increase anymore when increasing the number of clients. We can determine that easily by if the throughput plot shows a flat line after some point.
+	\item The response time increases linearly. In an ideal system the response time stays flat when the system is not saturated. However in practice a lot of factors can influence the response time, so it might be increasing in a undersaturated system. What we look for in the response time plot is a "knee" which shows an increase in the amount the response increases per new client. 
+\end{itemize}
+%
+In general we will try to use the two conditions above to determine the point at which the system gets saturated.
+%
+\todo{interactive law check, maybe print a latex table when generating the plot with already filled in values for all experiments.}
+%
+As we can see in figure~\ref{fig:one_server_set_tp} we can achieve approximately 16000 ops/sec before the server is completely saturated, using XX\todo{real number} clients.
+%
+\todo{write about the response time plot, can we see there as well the point of saturation?}
+%
+Oversaturation does not occur in this experiment.
+%
+Since this is the very first experiment we cannot yet compare it to much.
+%
+The take away message here is that one memcached server can handle up to approximately 16000 write ops/sec and is saturated when using XX\todo{real number} virtual clients per thread.
+%
+Also we conclude definitely that memcached is the bottleneck of the system in this configuration and using this specific workload.
+%
+\paragraph{Read-Only Workload}
+%
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_1_one_server/0-1/memtier_get_tp_s.png}
+        \caption{\texttt{GET} Throughput}
+        \label{fig:one_server_get_tp}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_1_one_server/0-1/memtier_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time}
+        \label{fig:one_server_get_rt}
+    \end{minipage}
+\end{figure}
+%
+In figure~\ref{fig:one_server_get_tp} we see that the system can handle approximately 3000 read ops/sec.
+%
+As we have seen above the memcached server performs massively better for \texttt{SET} requests.
+%
+The reason for this is rather straight forward.
+%
+When handling \texttt{SET} requests the server can just store the record.
+%
+Usually this is done by hashing the key and storing the value in some sort of hash table, which is a operation that takes $O(1)$ time, since memcached stores all values in memory.
+%
+However when handling \texttt{GET} requests the server must hash the key, which is still done in constant time, but after hashing the server must actually retrieve the associated value from memory and send it to the client, which takes $O(s)$ time where $s$ is the size of the stored value.
+%
+The memcached server seems to be saturated even when using only 6 clients.
+%
+The saturation can is clearly depicted in figure~\ref{fig:one_server_get_tp}.
+%
+This hypothesis is also supported by the response time, we can see that from the start the response time increases linearly, without increasing the slope at some point during the experiment.
+%
+Oversaturation does not occur in this experiment even when using 240 virtual clients.
+%
+Since we could not identify an undersaturated phase of the system we ran an additional experiment.
+%
+The setup was that we used only one load generating machine with only one instance of memtier running only one thread.
+%
+The virtual clients were varied from 1 to 8, since above we saw an saturation at 6 clients we would expect this experiment to reveal an undersaturated memcached server.
+%
+\missingfigure{Include Response Time and Throughput plot for reduced one server config}
+%
 \subsection{Two Servers}
-
-For a read-only and write-only workload plot throughput and response time as a function of NumClients. The clients are connected to two memcached instances. 
-
-Use 1 load generating VM, with one memtier (CT=1) connected to each memcached instance (two memcache instances in total), and vary the number of virtual clients (VC) per memtier thread between 1 and 32. Show how the behavior of the server changes and explain what conclusions we can draw from this experiment.
-
-\begin{center}
-	\scriptsize{
-		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 2                        \\ 
-			\hline Number of client machines        & 1                        \\ 
-			\hline Instances of memtier per machine & 2                        \\ 
-			\hline Threads per memtier instance     & 1                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
-			\hline Workload                         & Write-only and Read-only \\
-			\hline Multi-Get behavior               & N/A                      \\
-			\hline Multi-Get size                   & N/A                      \\
-			\hline Number of middlewares            & N/A                      \\
-			\hline Worker threads per middleware    & N/A                      \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
-			\hline 
-		\end{tabular}
-	} 
-\end{center}
-
+%
+\subsubsection{System Setup}
+%
+For this experiment we will use the following system setup:
+%
+\begin{itemize}
+	\item 1 client machines with 2 memtier instances per machine. Each instance of memtier runs with 1 threads.
+	\item No middlewares
+	\item 2 memcached servers
+\end{itemize}
+%
+We vary the number of virtual clients per thread from 1 to 48.
+%
+\subsubsection{Objective}
+%
+In this experiment we turn to the clients.
+%
+The idea is to find out how much requests the clients can produce.
+%
+Assuming the clients will not be the bottleneck of the system we should be able to double the throughput from the previous experiments.
+%
+If the clients will be the bottleneck we expect the throughput of the system to be lower than in the previous section.
+%
 \subsubsection{Explanation}
-
-Describe how this experiment compares to the previous section. Which results are the same and which ones differ? Explain what further conclusions can be drawn from the experiment.
-
-
+%
+\paragraph{Write-Only Workload}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_2_two_servers/1-0/memtier_set_tp_s.png}
+        \caption{\texttt{SET} Throughput}
+        \label{fig:two_servers_set_tp}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_2_two_servers/1-0/memtier_set_rt_ms.png}
+        \caption{\texttt{SET} Response Time}
+        \label{fig:two_servers_set_rt}
+    \end{minipage}
+\end{figure}
+%
+In these two plots we can see both conditions for a saturated phase very clearly.
+%
+After 16 clients the throughput does not increase at all anymore and reaches a maximum of approximately 6000 write ops/sec.
+%
+This can be supported by looking at the response time, where we can clearly see the "knee" in the plot after 16 clients.
+%
+From the previous section we know that one memcached server can handle approximately 16000 write ops/sec which means, since here we have 2 servers, if the servers were the bottleneck we should see double that number.
+%
+This would lead to the conclusion that the only other participant must be the bottleneck, namely memtier.
+%
+But in figure~\ref{fig:two_servers_set_rt} we can see that "knee" in the graph, indicating that the memcached server could be the bottleneck.
+%
+I still conclude that memtier is the bottleneck, since if we compare the absolute values with figure\ref{fig:one_server_set_rt} we quickly see that a saturated memcached server produces response times a lot higher than what we measured in this experiment.
+%
+An ideal server would show a constant response time, but comparing the roughly 9ms we measured here for 92 clients with the approximately 35ms measured with only one server, we can conclude that we are not dealing with saturated memcached servers here.
+%
+\paragraph{Read-Only Workload}
+%
+\begin{figure}[H]
+	\centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_2_two_servers/0-1/memtier_get_tp_s.png}
+        \caption{\texttt{GET} Throughput}
+        \label{fig:two_servers_get_tp}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/1_2_two_servers/0-1/memtier_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time}
+        \label{fig:two_servers_get_rt}
+    \end{minipage}
+\end{figure}
+%
+Again here we can clearly the the saturation of the system.
+%
+However the system is already saturated using only 8 clients in total.
+%
+This is not surprising since we know from before that \texttt{GET} requests are more expensive for the server than \texttt{SET} requests.
+%
+What is interesting however is that we can produce almost exactly the same amount of read operations per second than write operations. 
+%
+From this we conclude that the generation of the payload for \texttt{SET} requests produces a negligible overhead on the client machines.
+%
+However here it is not as clear cut as before that memtier is the bottleneck.
+%
+As we saw in figure~\ref{fig:one_server_get_tp} one server alone can handle approximately 3000 ops/sec, therefore we expect that two saturated memcached servers together can serve about 6000 ops/sec.
+%
+In figure~\ref{fig:two_servers_get_tp} we see that in this case we achieve approximately 6000 read ops/sec.
+%
+This is the exact value we expected from memcached, however it is also the maximum number of requests a client machine can produce.
+%
+Therefore it is difficult to say exaclty whether memtier or the memcached server are the bottleneck of this system.
+%
+\todo{Write about Response Time plot, maybe this indicates a better way of distinguishing between memcached or memtier as a bottleneck}
+%
 \subsection{Summary}
 
 Based on the experiments above, fill out the following table:
@@ -363,10 +514,21 @@ Based on the experiments above, fill out the following table:
 Write at least two paragraphs about how both results relate. Describe what is the bottleneck of this setup is. If the maximum throughput for both experiments is the same, explain why. If it is not the case, explain why not. Write down key take-away messages about the behaviour of the memtier clients and the memcached servers.
 
 \section{Baseline with Middleware (90 pts)}
-
-In this set of experiments, you will have to use three load generator VMs and 1 memcached server, measuring how the throughput of the system changes when increasing the number of clients. Scaling virtual clients inside memtier has to be done as explained in the previous sections. Plot both throughput and response time as measured on the middleware.
-
+%
 \subsection{One Middleware}
+%
+\subsubsection{System Setup}
+%
+For this experiment we will use the following system setup:
+%
+\begin{itemize}
+	\item 3 client machines with 1 memtier instances per machine. Each instance of memtier runs with 2 threads.
+	\item 1 middleware
+	\item 1 memcached server
+\end{itemize}
+%
+We vary the number of virtual clients per thread from 1 to 48.
+%
 
 Connect three load generator machines (one instance of memtier with CT=2) to a single middleware and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time measured in the middleware.
 
