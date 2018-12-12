@@ -47,7 +47,6 @@ class TestRunner(object):
             raise e
         finally:
             self.stop_memcached_servers()
-            self.client_manager.close()
 
     def run_single_test(self, iteration, run_configuration, base_log_dir):
 
