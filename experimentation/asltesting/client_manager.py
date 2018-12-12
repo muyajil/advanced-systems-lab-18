@@ -22,7 +22,7 @@ class ClientManager(object):
             self.clients['middleware'][server_id] = self.get_or_create_client('middleware', server_id)
 
         for server_id in range(1, run_configuration['num_client_machines'] + 1):
-            self.clients['middleware'][server_id] = self.get_or_create_client('middleware', server_id)
+            self.clients['memtier'][server_id] = self.get_or_create_client('memtier', server_id)
 
     def create_client(self, server_type, server_id):
         if self.local:
