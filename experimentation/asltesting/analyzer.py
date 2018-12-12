@@ -128,10 +128,11 @@ class MemtierAnalyzer(Analyzer):
                 rep_tps.append(pd.DataFrame(host_tps))
             tps.append(pd.DataFrame(reduce(lambda x, y: x.add(y), rep_tps)))
         tps = pd.concat(tps)
-        avg_tp_s = tps.mean()
-        conf_tp_s = Analyzer.get_confidence_interval(tps)
+        avg_tp_s = tps.mean()[0]
+        conf_tp_s = Analyzer.get_confidence_interval(tps)[0]
 
         return avg_rt_ms, rt_ms_25, rt_ms_50, rt_ms_75, rt_ms_90, rt_ms_99, conf_rt_ms, avg_tp_s, conf_tp_s
+
 
 class MiddlewareAnalyzer(Analyzer):
 

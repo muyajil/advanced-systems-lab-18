@@ -23,6 +23,10 @@ def generate_plots(test_configs, plot_dir=None):
                 mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
 
 
+def move_and_sample_logs(test_configs, log_dir):
+    pass
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_names', nargs='+', type=str, default=[], dest='test_names')

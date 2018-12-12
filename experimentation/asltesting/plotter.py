@@ -164,9 +164,21 @@ class Plotter(ABC):
             plt.savefig(path)
             print("Generated plot {}".format(path))
 
+    def save_plot_data(self, plot_data, plot_dir):
+        dfs = []
+        for num_threads in plot_data:
+            temp_df = plot_data[num_threads]
+            temp_df['num_workers'] = num_threads
+            dfs.append(temp_df)
+
+        df = pd.concat(dfs)
+        df.to_csv(os.path.join(plot_dir, 'plot_data.csv'))
+
     def generate_plots(self, plot_data, plot_dir, x_label):
         if not os.path.exists(plot_dir):
             os.makedirs(plot_dir)
+
+        self.save_plot_data(plot_data, plot_dir)
 
         plot_types = self.get_plot_types()
 
