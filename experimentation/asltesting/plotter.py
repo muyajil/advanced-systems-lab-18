@@ -172,7 +172,7 @@ class Plotter(ABC):
             dfs.append(temp_df)
 
         df = pd.concat(dfs)
-        df.to_csv(os.path.join(plot_dir, 'plot_data.csv'))
+        df.to_csv(os.path.join(plot_dir, self.get_server_type() + '_plot_data.csv'))
 
     def generate_plots(self, plot_data, plot_dir, x_label):
         if not os.path.exists(plot_dir):

@@ -18,7 +18,7 @@ def generate_plots(test_configs, plot_dir=None):
             mt_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
         if test_config.run_configuration['num_threads_per_mw_range'][0] > 0:
             if plot_dir is not None:
-                mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, plot_dir)
+                mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, os.path.join(plot_dir, test_config.name))
             else:
                 mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
 
