@@ -90,6 +90,9 @@ class SSHClient(Client):
 
     def __init__(self, host, key, username):
         self.client = self.get_ssh_client(host, key, username)
+        self.host = host
+        self.key = key
+        self.username = username
         self.command = None
         self.stdin = None
         self.stdout = None
@@ -113,6 +116,16 @@ class SSHClient(Client):
                     paramiko.ssh_exception.SSHException):
                 time.sleep(1)
         return ssh_client
+
+    def exec_command(self, command, retry=False):
+        try:
+            self.client.exec_command(command)
+        except AttributeError as e:
+            if retry:
+                raise e
+            else:
+                self.client = self.get_ssh_client(self.host, self.key, self.username)
+                self.exec_command(command, retry=True)
 
     def close(self):
         self.client.close()

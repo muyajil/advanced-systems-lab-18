@@ -169,7 +169,7 @@ class TestRunner(object):
             num_servers=self.run_configuration['num_memcached_servers'],
             memcached_ips=self.get_memcached_ips())
         self.client_manager.exec(middleware_command, 'middleware', 1)
-        time.sleep(5)
+        time.sleep(10)
 
         middleware_ip = self.client_manager.get_internal_ip('middleware', 1)
 
