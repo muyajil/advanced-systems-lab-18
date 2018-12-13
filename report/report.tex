@@ -601,7 +601,7 @@ For this experiment we will use the following system setup:
 	\item 1 memcached server
 \end{itemize}
 %
-We vary the number of virtual clients per thread from 1 to 48.
+We vary the number of virtual clients per thread from 1 to XX\todo{real number}.
 %
 \subsubsection{Hypothesis}
 %
@@ -617,7 +617,7 @@ Therefore we expect also in this case that \texttt{SET} requests will have a hig
 %
 Also as we increase the number of worker threads, more clients should be needed to saturate the system.
 %
-\subsubsection{Explanation}
+\subsubsection{Explanation}\label{subsec:one_middleware_explanation}
 %
 \paragraph{Write-Only Workload}
 %
@@ -689,7 +689,7 @@ In the following experiments I will include this plot, but I will not mention it
 %
 \par
 %
-Now if we look at figure~\ref{fig:one_middleware_set_tp_mw} we can see that the system is saturated when using 24 clients with 8 threads, 96 clients with 16 threads, XX\todo{real number} clients using 32 threads and XX\todo{real number} with 64 worker threads.
+Now if we look at figure~\ref{fig:one_middleware_set_tp_mw} we can see that the system is saturated when using 24 clients with 8 threads, 48 clients with 16 threads, XX\todo{real number} clients using 32 threads and XX\todo{real number} with 64 worker threads.
 %
 The same can be seen in figure~\ref{fig:one_middleware_set_rt_mw} where we can see the response time fan out at the same number of clients.
 %
@@ -706,6 +706,8 @@ We can also look at the figure~\ref{fig:one_middleware_set_ql} and see a similar
 As long as the system is undersaturated the queue length should not increase significantly, after the system is saturated the queue length will increase linearly similar to the response time.
 %
 Therefore we can conclude here that the middleware is the bottleneck, and that the middleware can handle up to XX\todo{real number} \texttt{SET} ops/sec, as long as the middleware does not need to coordinate those requests across multiple servers.
+%
+Oversaturation did not occur in this experiment.
 %
 \paragraph{Read-Only Workload}
 %
@@ -761,9 +763,10 @@ We can quickly see that at first it is correct that memcached is the bottleneck,
 %
 However at some point the service time stays flat.
 %
-Specifically at 24 clients using 8 threads, at 48 clients for 16 and 32 threads, and finally at 96 clients for 64 threads. 
+Specifically at 24 clients using 8 threads, at 48 clients for 16 and 32 threads, and finally at 96 clients for 64 threads.\todo{check numbers after experiment run} 
 %
-At this point the bottleneck moves to the middleware.
+At first glance it might seem that the middleware is the bottleneck since the service time of the servers does not increase anymore.
+%
 \par
 What happens inside the middleware, is that each of the workers is processing a request at all times. 
 %
@@ -771,17 +774,17 @@ For the memcached server that means that it sees only 64 clients, which are beha
 %
 Again we can use support this conclusion by looking at figure~\ref{fig:one_middleware_get_ql} where we see the queue length increase at the same point where the service time of memcached does not increase anymore, showing that the worker threads cannot handle more requests.
 %
-This is again due to the nature of \texttt{GET} requests, since we need to retrieve the value from memory and not only store it in constant time. 
+But here it is important to compare this to the first experiment where we only used one server.
 %
-\par
+In figure~\ref{fig:one_server_get_rt} we can see that we have a similar response time as we do now, meaning the middleware does not add any significant overhead.
 %
-It might be a bit misleading because a \texttt{GET} request does not produce more work for the middleware than \texttt{SET} requests.
+The middleware starts buffering requests from clients, but the bottleneck is still the server.
 %
-Therefore one might think that the middleware would be able to handle at least the same amount of \texttt{GET} requests as \texttt{SET}, since the middleware does not do more "work", for \texttt{GET} requests.
+Since in this case we handle \texttt{GET} requests exactly the same as we would handle \texttt{SET} requests we can say with confidence that the middleware would process these requests at the same rate, which is a lot higher than what we are seeing in this experiment.
 %
-We can explain this by imagining the memcached server as the "memory" of the middleware, the retrieval of a value still costs more than setting one.
+Using these arguments we conclude that, here too the server is the bottleneck of the system.
 %
-Therefore we conclude that after some number of clients depending on the thread configuration the middleware becomes the bottleneck of the system.
+Again oversaturation did not occur.
 %
 \par
 %
@@ -803,11 +806,11 @@ For this experiment we will use the following system setup:
 	\item 1 memcached server
 \end{itemize}
 %
-We vary the number of virtual clients per thread from 1 to 48.
+We vary the number of virtual clients per thread from 1 to XX\todo{real number}.
 %
 \subsubsection{Hypothesis}
 %
-We expect this configuration to handle twice as many requests as with one middleware before becoming saturated, assuming the server will not bottleneck the system.
+We expect this configuration to handle twice the load as with one middleware before becoming saturated, assuming the server will not bottleneck the system.
 %
 Again we only use one server, therefore we expect again in this case that \texttt{SET} requests will have a higher throughput than \texttt{GET} requests.
 %
@@ -857,7 +860,29 @@ Further as we increase the number of worker threads, more clients should be need
     \end{minipage}
 \end{figure}
 %
-
+By looking at figure~\ref{fig:two_middlewares_set_tp_mw} we see that we can handle approximately XX\todo{real number} clients for  threads, XX\todo{real number} clients for 16 threads, XX\todo{real number} clients for 32 threads and finally XX\todo{real number} clients for 64 threads before the system is saturated.
+%
+From section~\ref{sec:one_server_explanantion} we know that one server can handle approximately 16000 write ops/sec.
+%
+Therefore we can assume that the server is not the bottleneck before the middlewares before we reach approximately 16000 ops/sec.
+%
+We can confirm that by looking at~\ref{fig:two_middlewares_set_st_mw} which shows that for 8, 16 and 32 threads the service time of memcached stays almost constant, indicating that the server is not saturated. 
+%
+Even though the server is not saturated and the service time is almost constant, the response time still increases.
+%
+That means that in these cases the middleware must be the bottleneck, since we have 3 load generating machines, which are able to produce plenty of requests to saturate the memcached server.
+%
+We can further support this conclusion by looking at the queue length in the middleware, there we can see at the same threshold the requests begin to wait in the queue indicating that the above conclusion is sound.
+%
+\par
+%
+However the configuration using 64 threads behaves differently.
+%
+First we can see that when the system is saturated we can handle approximately 16000 ops/sec which, as mentioned before, should saturate the server.
+%
+If we again turn to the service time we can see that at the same time when we reach 16000 ops/sec the service time of memcached starts to increase linearly, therefore letting us conclude that the server is the bottleneck after we reach XX\todo{real number} clients.
+%
+Again we can further support this conclusion using figure~\ref{fig:two_middlewares_set_ql} where we can see that the queue length  does increase, however combining this with the increasing service time, again supports the statement that the middleware is not the bottleneck using 64 threads.
 %
 \paragraph{Read-Only Workload}
 %
@@ -900,10 +925,29 @@ Further as we increase the number of worker threads, more clients should be need
         \label{fig:two_middlewares_get_st_mw}
     \end{minipage}
 \end{figure}
+Again we use only one server here, so we expect the system to be saturated again at approximately 3000 ops/sec.
 %
-We can handle double the clients in this middleware before being saturated however still saturated
-
-
+We can verify this in figure~\ref{fig:two_middlewares_get_tp_mw}.
+%
+As usual by looking at the throughput plot using one server we cannot really identify the bottleneck, since it is saturated from the start, which can again be confirmed by the linearly increasing response time in figure~\ref{fig:two_middlewares_get_rt_mw}.
+%
+If we would only look at the throughput and response time measured by the middleware it looks like the system behaves exactly the same even when using two middlewares.
+%
+Therefore we again look at the internals of the system.
+%
+We see a similar behaviour as in the previous section when looking at figure~\ref{fig:two_middlewares_set_tp_mw}, but the difference is that we seem to be able to handle approximately double the number of clients before the service time of the servers does not increase anymore.
+%
+This is not really surprising, since now we use double the amount of worker threads.
+%
+That means that we need twice the number of clients such that are worker threads are constantly busy with handling requests.
+%
+Using the same argumentation as in section~\ref{subsec:one_middleware_explanation} we can again conclude that the memcached server is the bottleneck in this configuration.
+%
+Also like in the previous experiments with only one server we cannot see an undersaturated phase of the system.
+%
+Therefore we ran another reduced experiment where we again only use 1 to 6 total clients.
+%
+\missingfigure{Plots for reduced version of two middlewares get}
 
 
 
