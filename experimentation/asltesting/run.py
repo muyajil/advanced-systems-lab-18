@@ -56,6 +56,7 @@ if __name__ == '__main__':
 
         generate_plots(test_configs, paths.Absolute.SUBMISSION_PLOTS)
         #TODO: move log files to submission dir and sample
+        #TODO: Copy report pdf to root directory
         pass
 
     elif args.two_k_analysis:

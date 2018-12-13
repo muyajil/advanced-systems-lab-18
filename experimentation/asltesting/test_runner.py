@@ -133,7 +133,7 @@ class TestRunner(object):
             # print('\t\t' + command)
             self.client_manager.exec(command=command, server_type='middleware', server_id=middleware_id)
 
-        time.sleep(10)
+        time.sleep(15)
 
     def stop_middleware(self):
         print('\t\tStopping middleware...')

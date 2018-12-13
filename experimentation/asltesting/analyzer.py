@@ -181,8 +181,11 @@ class MiddlewareAnalyzer(Analyzer):
          avg_set_tp_s,
          conf_set_tp_s,
          avg_interactive_set_rt_ms,
+         avg_set_think_time,
          avg_set_service_time_ms,
-         conf_set_service_time_ms) = MiddlewareAnalyzer.get_performance(set_df, s_bins)
+         conf_set_service_time_ms,
+         avg_set_time_in_queue_ms,
+         conf_set_time_in_queue_ms) = MiddlewareAnalyzer.get_performance(set_df, s_bins)
 
         (avg_get_rt_ms,
          get_rt_ms_25,
@@ -194,8 +197,11 @@ class MiddlewareAnalyzer(Analyzer):
          avg_get_tp_s,
          conf_get_tp_s,
          avg_interactive_get_rt_ms,
+         avg_get_think_time,
          avg_get_service_time_ms,
-         conf_get_service_time_ms) = MiddlewareAnalyzer.get_performance(get_df, s_bins)
+         conf_get_service_time_ms,
+         avg_get_time_in_queue_ms,
+         conf_get_time_in_queue_ms) = MiddlewareAnalyzer.get_performance(get_df, s_bins)
 
         miss_rate = 0
         if len(get_df) > 0:
@@ -214,7 +220,10 @@ class MiddlewareAnalyzer(Analyzer):
             "avg_set_tp_s": [avg_set_tp_s],
             "conf_set_tp_s": [conf_set_tp_s],
             "avg_interactive_set_rt_ms": [avg_interactive_set_rt_ms],
+            "avg_set_think_time": [avg_set_think_time],
             "conf_interactive_set_rt_ms": [0],
+            "avg_set_time_in_queue_ms": [avg_set_time_in_queue_ms],
+            "conf_set_time_in_queue_ms": [conf_set_time_in_queue_ms],
 
             "avg_get_rt_ms": [avg_get_rt_ms],
             "get_rt_ms_25": [get_rt_ms_25],
@@ -226,6 +235,7 @@ class MiddlewareAnalyzer(Analyzer):
             "avg_get_tp_s": [avg_get_tp_s],
             "conf_get_tp_s": [conf_get_tp_s],
             "avg_interactive_get_rt_ms": [avg_interactive_get_rt_ms],
+            "avg_get_think_time": [avg_get_think_time],
             "conf_interactive_get_rt_ms": [0],
 
             "avg_queue_length": [avg_queue_length],
@@ -235,6 +245,8 @@ class MiddlewareAnalyzer(Analyzer):
             "conf_get_service_time_ms": [conf_get_service_time_ms],
             "avg_set_service_time_ms": [avg_set_service_time_ms],
             "conf_set_service_time_ms": [conf_set_service_time_ms],
+            "avg_get_time_in_queue_ms": [avg_get_time_in_queue_ms],
+            "conf_get_time_in_queue_ms": [conf_get_time_in_queue_ms],
 
             "miss_rate": [miss_rate]
         }
@@ -243,11 +255,15 @@ class MiddlewareAnalyzer(Analyzer):
     def get_performance(df, seconds_bins):
 
         if df.empty:
-            return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
         df['ServiceTimeMilli'] = (df['ReceivedFromServerNano'] - df['SentToServerNano']) / 1e6
         avg_service_time = df['ServiceTimeMilli'].mean()
         conf_service_time = Analyzer.get_confidence_interval(df['ServiceTimeMilli'])
+
+        df['TimeInQueueMilli'] = (df['DequeueNano'] - df['EnqueueNano']) / 1e6
+        avg_time_in_queue = df['TimeInQueueMilli'].mean()
+        conf_time_in_queue = Analyzer.get_confidence_interval(df['TimeInQueueMillie'])
 
         df['ResponseTimeMilli'] = (df['ReturnedToClientNano'] - df['StartReceivingNano']) / 1e6
         avg_rt_ms = df['ResponseTimeMilli'].mean()
@@ -267,11 +283,25 @@ class MiddlewareAnalyzer(Analyzer):
                 rep_tps.append(pd.DataFrame(host_tps))
             tps.append(pd.DataFrame(reduce(lambda x, y: x.add(y), rep_tps)))
         tps = pd.concat(tps)
-        avg_tp_s = tps.mean()
-        conf_tp_s = Analyzer.get_confidence_interval(tps)
+        avg_tp_s = tps.mean()[0]
+        conf_tp_s = Analyzer.get_confidence_interval(tps)[0]
 
         avg_think_time = ((df['ReturnedToClientNano'] - df['ReceivedFromServerNano']) / 1e9).mean()
         avg_interactive_rt_ms = (df['ClientId'].nunique() / avg_tp_s - avg_think_time) * 1000
 
-        return avg_rt_ms, rt_ms_25, rt_ms_50, rt_ms_75, rt_ms_90, rt_ms_99, conf_rt_ms, avg_tp_s, conf_tp_s, avg_interactive_rt_ms, avg_service_time, conf_service_time
+        return (avg_rt_ms,
+                rt_ms_25,
+                rt_ms_50,
+                rt_ms_75,
+                rt_ms_90,
+                rt_ms_99,
+                conf_rt_ms,
+                avg_tp_s,
+                conf_tp_s,
+                avg_interactive_rt_ms,
+                avg_think_time,
+                avg_service_time,
+                conf_service_time,
+                avg_time_in_queue,
+                conf_time_in_queue)
 
