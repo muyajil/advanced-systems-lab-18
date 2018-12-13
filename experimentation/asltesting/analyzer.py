@@ -263,7 +263,7 @@ class MiddlewareAnalyzer(Analyzer):
 
         df['TimeInQueueMilli'] = (df['DequeueNano'] - df['EnqueueNano']) / 1e6
         avg_time_in_queue = df['TimeInQueueMilli'].mean()
-        conf_time_in_queue = Analyzer.get_confidence_interval(df['TimeInQueueMillie'])
+        conf_time_in_queue = Analyzer.get_confidence_interval(df['TimeInQueueMilli'])
 
         df['ResponseTimeMilli'] = (df['ReturnedToClientNano'] - df['StartReceivingNano']) / 1e6
         avg_rt_ms = df['ResponseTimeMilli'].mean()
