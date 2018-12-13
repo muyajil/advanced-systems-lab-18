@@ -51,7 +51,7 @@ YLIMS = {
     "get_service_time_ms": 50,
     "set_service_time_ms": 50,
     "interactive_set_rt_ms": 50,
-    "interactive_get_rt_ms": 50,
+    "interactive_get_rt_ms": 100,
     "queue_length": 300
 }
 
