@@ -5,6 +5,7 @@ from asltesting.plotter import MiddlewarePlotter, MemtierPlotter
 from asltesting.test_runner import TestRunner
 from asltesting import paths
 from asltesting.install import Installer
+from asltesting.twok_analyzer import TwoKAnalyzer
 import time
 
 
@@ -63,9 +64,10 @@ if __name__ == '__main__':
         test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id),
                                 filter(lambda x: '2k' in x,
                                        sorted(os.listdir(paths.Absolute.TESTS)))))
-        # TODO: Load data from 2k analysis
-        # TODO: Print 2k analysis tables for latex
-        pass
+
+        twoKAnalyzer = TwoKAnalyzer(test_configs)
+        twoKAnalyzer.generate_sign_table('1-0')
+        twoKAnalyzer.generate_sign_table('0-1')
 
     elif args.plot:
         generate_plots(test_configs)
