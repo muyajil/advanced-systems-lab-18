@@ -4,7 +4,7 @@
     "num_memcached_servers": 3,
 
     "num_middlewares": 2,
-    "num_threads_per_mw_range": [32],
+    "num_threads_per_mw_range": [64],
 
     "num_client_machines": 3,
     "num_memtier_per_client": 2,
