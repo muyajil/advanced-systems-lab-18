@@ -49,7 +49,11 @@ public class Worker implements Runnable {
                         response = handleGetRequest(request);
                         break;
                     case "MULTI-GET":
-                        response = handleMultiGetRequest(request);
+                        if (this.readSharded){
+                            response = handleMultiGetRequest(request);
+                        } else {
+                            response = handleGetRequest(request);
+                        }
                         break;
                     default:
                         response = "";
