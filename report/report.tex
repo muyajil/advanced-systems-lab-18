@@ -941,6 +941,10 @@ We see a similar behaviour as in the previous section when looking at Figure~\re
 %
 This is not really surprising, since now we use double the amount of worker threads.
 %
+However we do not measure double the throughput.
+%
+This is explained by the fact that the middleware is not completely parallelized, therefore when adding more worker threads we have diminishing returns.
+%
 That means that we need twice the number of clients such that are worker threads are constantly busy with handling requests.
 %
 Using the same argumentation as in section~\ref{subsec:one_middleware_explanation} we can again conclude that the memcached server is the bottleneck in this configuration.
@@ -1085,7 +1089,7 @@ Oversaturation does not occur in this experiment.
 		\hline Throughput (Middleware)                    &  8290    &   9920    &   11753    &   13435    \\ 
 		\hline Throughput (Derived from MW response time) &  11046   &   12031    &   13412    &   15117    \\ 
 		\hline Throughput (Client)                        &  8254   &   9865    &    11693   &    13365   \\ 
-		\hline Average time in queue                      &  0.45 ms   &    0.96 ms   &    1.89   &   3.44    \\ 
+		\hline Average time in queue                      &  0.45 ms   &    0.96 ms   &    1.89 ms   &   3.44 ms    \\ 
 		\hline Average length of queue                    &  1.04   &  2.78    &    7.23    &   18.99    \\ 
 		\hline Average time waiting for memcached         &  1.51 ms   &   2.79 ms    &    5.00 ms   &   8.93 ms    \\ 
 		\hline 
@@ -1110,7 +1114,7 @@ Increasing the worker threads also increases the throughput.
 %
 However when doubling the worker threads the throughput does not double as well.
 %
-This is due to the fact the the middleware is not completely parallelized, therefore we have diminishing returns in terms of throughput and adding more worker threads.
+As mentioned before this is due to the fact the the middleware is not completely parallelized, therefore we have diminishing returns in terms of throughput and adding more worker threads.
 %
 \par
 %
