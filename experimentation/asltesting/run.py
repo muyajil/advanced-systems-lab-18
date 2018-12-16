@@ -29,24 +29,41 @@ def generate_plots(test_configs, plot_dir=None):
 
 def move_and_sample_logs(test_configs, submission_dir):
     for test_config in test_configs:
+        print('Processing {}'.format(test_config.name))
         for workload in test_config.run_configuration['workloads']:
             for num_threads_per_mw in test_config.run_configuration['num_threads_per_mw_range']:
                 for num_clients_per_thread in test_config.run_configuration['num_clients_per_thread_range']:
                     for iteration in range(3):
-                        log_dir =  os.path.join(test_config.base_log_dir,
+                        old_log_dir = os.path.join(test_config.log_dir,
                                         *[
                                             str(num_threads_per_mw),
                                             str(num_clients_per_thread),
                                             '-'.join(map(lambda x: str(x), workload)),
                                             str(iteration)
                                         ])
-                        rmtree(os.path.join(submission_dir, 'memtier'))
-                        copytree(os.path.join(log_dir, 'memtier'), os.path.join(submission_dir, 'memtier'))
+
+                        if not os.path.exists(old_log_dir):
+                            continue
+
+                        new_log_dir =  os.path.join(submission_dir,
+                                        *[
+                                            str(test_config.name),
+                                            str(num_threads_per_mw),
+                                            str(num_clients_per_thread),
+                                            '-'.join(map(lambda x: str(x), workload)),
+                                            str(iteration)
+                                        ])
+
+                        if os.path.exists(os.path.join(new_log_dir, 'memtier')):
+                            rmtree(os.path.join(new_log_dir, 'memtier'))
+                        copytree(os.path.join(old_log_dir, 'memtier'), os.path.join(new_log_dir, 'memtier'))
                         
-                        middleware_log_files = glob(log_dir + '/middleware/*.log')
+                        middleware_log_files = glob(old_log_dir + '/middleware/*.log')
                         for mw_id, middleware_log_file in enumerate(middleware_log_files):
-                            df = pd.read_csv(middleware_log_file)
-                            df.sample(100000).to_csv(os.path.join(submission_dir, *['middleware', mw_id + '.log']))
+                            df = pd.read_csv(middleware_log_file).sample(1000)
+                            folder_path = os.path.join(new_log_dir, 'middleware')
+                            os.makedirs(folder_path, exist_ok=True)
+                            df.to_csv(os.path.join(folder_path, str(mw_id + 1) + '.log'))
 
 
 if __name__ == '__main__':
@@ -77,9 +94,8 @@ if __name__ == '__main__':
             raise RuntimeError("Prepare submission must refer to a run_id")
 
         generate_plots(test_configs, paths.Absolute.SUBMISSION_PLOTS)
-        #move_and_sample_logs(test_configs, paths.Absolute.SUBMISSION_LOGS)
+        move_and_sample_logs(test_configs, paths.Absolute.SUBMISSION_LOGS)
         copyfile('../report/report.pdf', '../report.pdf')
-        pass
 
     elif args.two_k_analysis:
         test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id),

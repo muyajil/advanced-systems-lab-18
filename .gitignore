@@ -2,7 +2,7 @@
 .vscode/*
 build/*
 dist/*
-*.csv
+tests/**/*.csv
 experimentation/.idea/*
 experimentation/tests/*/*/logs/
 */*/__pycache__/*
@@ -10,9 +10,12 @@ experimentation/tests/*/*/logs/
 experimentation/tests/archive/*
 experimentation/fill/*
 *.aux
-*.log
+tests/**/*.log
 *.synctex.gz
 *.out
 *.tdo
 .idea.bkp/*
 *.ipynb*
+logs.csv
+fill/*
+report/*.log
