@@ -60,7 +60,10 @@ class TwoKAnalyzer(object):
                                   str(self.num_clients),
                                   workload_str
                               ])
-                    total_clients = self.num_clients * test_config.run_configuration['num_client_machines'] * test_config.run_configuration['num_memtier_per_client'] * test_config.run_configuration['num_threads_per_memtier']
+                    total_clients = self.num_clients * \
+                        test_config.run_configuration['num_client_machines'] * \
+                        test_config.run_configuration['num_memtier_per_client'] * \
+                        test_config.run_configuration['num_threads_per_memtier']
                     temp_df = pd.DataFrame.from_dict(MiddlewareAnalyzer.get_datapoint(log_dir, total_clients))
                     temp_df['workload'] = workload_str
                     temp_df['num_middlewares'] = num_middlewares
@@ -78,12 +81,14 @@ class TwoKAnalyzer(object):
         if lines:
             tabular_def = 'c'.join(["|"]*(len(headers) + 1))
         else:
-            tabular_def = 'c|' + 'c'*(len(headers) - 2) + '|c'
+            tabular_def = '|c|' + 'c'*(len(headers) - 2) + '|c|'
+
+        print('\\scriptsize{')
         print('\\begin{tabular}{' + tabular_def + '}')
 
         print('\\hline {}\\\\'.format(' & '.join(headers)))
-
-        for _, row in df.iterrows():
+        print('\\hline')
+        for idx, row in df.iterrows():
             values = []
             for value in row.values:
                 if type(value) == str:
@@ -92,9 +97,12 @@ class TwoKAnalyzer(object):
                     values.append(str(int(value)))
                 else:
                     values.append('{:.2f}'.format(value))
-            print('\\hline {}\\\\'.format(' & '.join(values)))
+            print('{}\\\\'.format(' & '.join(values)))
+            if lines or idx == 7 or idx == 10:
+                print('\\hline')
 
         print('\\end{tabular}')
+        print('}')
         print('\\caption{' + caption + '}')
         print('\\end{table}')
         print('%')
@@ -168,6 +176,6 @@ class TwoKAnalyzer(object):
         self.print_latex_table(translated_df, caption)
 
         for target in targets:
-            caption = caption + ' Sign Table ' + self.header_translations[target]
+            table_caption = caption + ' Sign Table ' + self.header_translations[target]
             extended_df = self.extend_factors(translated_df, self.header_translations[target])
-            self.print_latex_table(extended_df, caption, lines=False)
+            self.print_latex_table(extended_df, table_caption, lines=False)

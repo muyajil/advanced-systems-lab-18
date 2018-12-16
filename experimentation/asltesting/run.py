@@ -7,6 +7,9 @@ from asltesting import paths
 from asltesting.install import Installer
 from asltesting.twok_analyzer import TwoKAnalyzer
 import time
+from shutil import copyfile, copytree, rmtree
+from glob import glob
+import pandas as pd
 
 
 def generate_plots(test_configs, plot_dir=None):
@@ -24,8 +27,26 @@ def generate_plots(test_configs, plot_dir=None):
                 mw_plotter.plot_test(test_config.run_configuration, test_config.log_dir, test_config.plot_dir)
 
 
-def move_and_sample_logs(test_configs, log_dir):
-    pass
+def move_and_sample_logs(test_configs, submission_dir):
+    for test_config in test_configs:
+        for workload in test_config.run_configuration['workloads']:
+            for num_threads_per_mw in test_config.run_configuration['num_threads_per_mw_range']:
+                for num_clients_per_thread in test_config.run_configuration['num_clients_per_thread_range']:
+                    for iteration in range(3):
+                        log_dir =  os.path.join(test_config.base_log_dir,
+                                        *[
+                                            str(num_threads_per_mw),
+                                            str(num_clients_per_thread),
+                                            '-'.join(map(lambda x: str(x), workload)),
+                                            str(iteration)
+                                        ])
+                        rmtree(os.path.join(submission_dir, 'memtier'))
+                        copytree(os.path.join(log_dir, 'memtier'), os.path.join(submission_dir, 'memtier'))
+                        
+                        middleware_log_files = glob(log_dir + '/middleware/*.log')
+                        for mw_id, middleware_log_file in enumerate(middleware_log_files):
+                            df = pd.read_csv(middleware_log_file)
+                            df.sample(100000).to_csv(os.path.join(submission_dir, *['middleware', mw_id + '.log']))
 
 
 if __name__ == '__main__':
@@ -56,8 +77,8 @@ if __name__ == '__main__':
             raise RuntimeError("Prepare submission must refer to a run_id")
 
         generate_plots(test_configs, paths.Absolute.SUBMISSION_PLOTS)
-        #TODO: move log files to submission dir and sample
-        #TODO: Copy report pdf to root directory
+        #move_and_sample_logs(test_configs, paths.Absolute.SUBMISSION_LOGS)
+        copyfile('../report/report.pdf', '../report.pdf')
         pass
 
     elif args.two_k_analysis:

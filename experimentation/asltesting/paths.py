@@ -12,6 +12,7 @@ class Absolute(object):
     REMOTE_FILL_LOGS = '/home/ajilm/fill/'
     REMOTE_LOGS = '/home/ajilm/logs/'
     SUBMISSION_PLOTS = '/home/muy/repositories/asl18/illustrations/plots/'
+    SUBMISSION_LOGS = '/home/muy/repositories/asl18/submission_logs/'
 
 
 class Relative(object):

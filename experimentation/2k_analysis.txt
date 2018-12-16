@@ -1,0 +1,146 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline MW & MC & WT & Avg. TP (ops/sec) & Avg. RT (ms)\\
+\hline
+-1 & -1 & -1 & 5616.83 & 33.12\\
+\hline
+-1 & -1 & 1 & 9514.23 & 17.71\\
+\hline
+1 & -1 & -1 & 7264.69 & 21.00\\
+\hline
+1 & -1 & 1 & 11776.94 & 14.62\\
+\hline
+-1 & 1 & -1 & 4035.64 & 38.35\\
+\hline
+-1 & 1 & 1 & 7010.56 & 24.48\\
+\hline
+1 & 1 & -1 & 5993.84 & 29.86\\
+\hline
+1 & 1 & 1 & 9174.76 & 18.41\\
+\hline
+\end{tabular}
+\caption{Write-Only Workload}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. TP (ops/sec)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 5616.83\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 9514.23\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 7264.69\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 11776.94\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 4035.64\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 7010.56\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 5993.84\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 9174.76\\
+\hline
+60387.49 & 8032.97 & -7957.88 & 14565.49 & 211.83 & 820.86 & -2253.80 & -408.86 & Total\\
+7548.44 & 1004.12 & -994.74 & 1820.69 & 26.48 & 102.61 & -281.72 & -51.11 & Total/8\\
+100.0\% & 18.65\% & 18.3\% & 61.32\% & 0.01\% & 0.19\% & 1.47\% & 0.05\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Write-Only Workload Sign Table Avg. TP (ops/sec)}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. RT (ms)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 33.12\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 17.71\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 21.00\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 14.62\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 38.35\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 24.48\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 29.86\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 18.41\\
+\hline
+197.55 & -29.77 & 24.66 & -47.11 & 0.67 & 11.45 & -3.54 & -6.61 & Total\\
+24.69 & -3.72 & 3.08 & -5.89 & 0.08 & 1.43 & -0.44 & -0.83 & Total/8\\
+100.0\% & 22.72\% & 15.58\% & 56.89\% & 0.01\% & 3.36\% & 0.32\% & 1.12\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Write-Only Workload Sign Table Avg. RT (ms)}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline MW & MC & WT & Avg. TP (ops/sec) & Avg. RT (ms)\\
+\hline
+-1 & -1 & -1 & 2987.82 & 63.30\\
+\hline
+-1 & -1 & 1 & 2939.13 & 64.02\\
+\hline
+1 & -1 & -1 & 3005.22 & 62.47\\
+\hline
+1 & -1 & 1 & 3007.24 & 61.73\\
+\hline
+-1 & 1 & -1 & 8568.48 & 21.17\\
+\hline
+-1 & 1 & 1 & 9071.78 & 19.84\\
+\hline
+1 & 1 & -1 & 8967.35 & 19.64\\
+\hline
+1 & 1 & 1 & 9009.09 & 19.66\\
+\hline
+\end{tabular}
+\caption{Read-Only Workload}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. TP (ops/sec)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 2987.82\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 2939.13\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 3005.22\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 3007.24\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 8568.48\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 9071.78\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 8967.35\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 9009.09\\
+\hline
+47556.11 & 421.69 & 23677.31 & 498.38 & 250.67 & -410.85 & 591.70 & -512.28 & Total\\
+5944.51 & 52.71 & 2959.66 & 62.30 & 31.33 & -51.36 & 73.96 & -64.04 & Total/8\\
+100.0\% & 0.03\% & 99.77\% & 0.04\% & 0.01\% & 0.03\% & 0.06\% & 0.05\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Read-Only Workload Sign Table Avg. TP (ops/sec)}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. RT (ms)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 63.30\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 64.02\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 62.47\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 61.73\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 21.17\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 19.84\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 19.64\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 19.66\\
+\hline
+331.82 & -4.84 & -171.21 & -1.33 & 1.42 & -0.11 & -1.28 & 2.80 & Total\\
+41.48 & -0.61 & -21.40 & -0.17 & 0.18 & -0.01 & -0.16 & 0.35 & Total/8\\
+100.0\% & 0.08\% & 99.87\% & 0.01\% & 0.01\% & 0.0\% & 0.01\% & 0.03\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Read-Only Workload Sign Table Avg. RT (ms)}
+\end{table}
+%

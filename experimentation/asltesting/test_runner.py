@@ -35,7 +35,7 @@ class TestRunner(object):
 
             self.start_memcached_servers()
 
-            self.warm_up_caches()
+            # self.warm_up_caches()
 
             for run in range(self.num_runs):
                 print('################################################################')

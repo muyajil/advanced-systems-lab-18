@@ -4,6 +4,10 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{etoolbox}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -12,6 +16,14 @@
 
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
+
+\newcommand{\expval}[1]{
+	E\text{[}#1\text{]}
+	}
+	
+\newcommand{\varval}[1]{
+	Var\text{[}#1\text{]}
+}
 
 \newcommand*{\escape}[1]{\texttt{\textbackslash#1}}
 
@@ -323,6 +335,7 @@ We expect that this can be accomplished since we have 3 load generating machines
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/1_1_one_server/1-0/memtier_set_tp_s.png}
@@ -348,8 +361,6 @@ We can see that the server is saturated by two things:
 %
 In general we will try to use the two conditions above to determine the point at which the system gets saturated.
 %
-\todo{interactive law check, maybe print a latex table when generating the plot with already filled in values for all experiments.}
-%
 As we can see in Figure~\ref{fig:one_server_set_tp} we can achieve approximately 16000 ops/sec before the server is completely saturated, using 96 clients.
 %
 In Figure~\ref{fig:one_server_set_rt} it is more difficult to identify the point at which the system is saturated. 
@@ -368,6 +379,7 @@ Also we conclude definitely that memcached is the bottleneck of the system in th
 %
 \begin{figure}[H]
     \centering
+    \captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/1_1_one_server/0-1/memtier_get_tp_s.png}
@@ -412,6 +424,7 @@ The virtual clients were varied from 1 to 6, since above we saw an saturation at
 %
 \begin{figure}[H]
     \centering
+    \captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/1_1_1_one_server_reduced/0-1/memtier_get_tp_s.png}
@@ -426,7 +439,7 @@ The virtual clients were varied from 1 to 6, since above we saw an saturation at
     \end{minipage}
 \end{figure}
 %
-As we can see rather clearly in Figure~\ref{fig:one_server_reduced_get_tp} the memcached server is already saturated using only 2 clients in total.
+As we can see rather clearly in Figure~\ref{fig:one_server_reduced_get_tp} the memcached server is already saturated using only 4 clients in total.
 %
 Also in Figure~\ref{fig:one_server_reduced_get_rt} we can identify the response time starting to increase after two clients.
 %
@@ -460,6 +473,7 @@ In this case we expect memtier to be the bottleneck of the system.
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/1_2_two_servers/1-0/memtier_set_tp_s.png}
@@ -494,6 +508,7 @@ An ideal server would show a constant response time, but comparing the roughly 9
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/1_2_two_servers/0-1/memtier_get_tp_s.png}
@@ -603,7 +618,7 @@ For this experiment we will use the following system setup:
 	\item 1 memcached server
 \end{itemize}
 %
-We vary the number of virtual clients per thread from 1 to XX\todo{real number}.
+We vary the number of virtual clients per thread from 1 to 40.
 %
 \subsubsection{Hypothesis}
 %
@@ -625,6 +640,7 @@ Also as we increase the number of worker threads, more clients should be needed 
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/middleware_set_tp_s.png}
@@ -641,6 +657,7 @@ Also as we increase the number of worker threads, more clients should be needed 
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/middleware_interactive_set_rt_ms.png}
         \caption{\texttt{SET} Response time IRTL}
@@ -650,6 +667,7 @@ Also as we increase the number of worker threads, more clients should be needed 
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/1-0/middleware_queue_length.png}
         \caption{\texttt{SET} Queue Length}
@@ -677,6 +695,12 @@ It is the time a client needs to produce another request.
 %
 Using the data collected inside the middleware we can estimate this time, by looking at how long it takes after a worker has responsed to the client until a new request from the same client is received in the net thread.
 %
+However since analyzing this is extremely time consuming, since for each combination of client, worker and middleware we need to sort the values and compute this time, we estimated this using the time a woker is idle.
+%
+To motivate this we looked at a sample where we checked the difference between the two numbers, and since the difference between the two is constant and small, which means the net thread and network latency do not add significant overhead, it is reasonable to take this as an estimation for the think time.
+%
+\par
+%
 The rest of the variables are measured by the middleware as well.
 %
 Now we can estimate the response time based on the throughput, think time and the number of clients.
@@ -687,15 +711,17 @@ However since the think time is estimated, also the resulting response time will
 %
 As long as the response time from the interactive law and the measured response time behave similarly, we can assume that the response time and throughput measured is realistic.
 %
+Further since through looking at the idle time we lower-bound the think time, also the response time compute by the Interactive Law serves as a lower bound for the response time measured on the client.
+%
 In the following experiments I will include this plot, but I will not mention it every time.
 %
 \par
 %
-Now if we look at Figure~\ref{fig:one_middleware_set_tp_mw} we can see that the system is saturated when using 24 clients with 8 threads, 48 clients with 16 threads, XX\todo{real number} clients using 32 threads and XX\todo{real number} with 64 worker threads.
+Now if we look at Figure~\ref{fig:one_middleware_set_tp_mw} we can see that the system is saturated when using 24 clients with 8 threads, 48 clients with 16 threads, 96 clients using 32 threads and 192 with 64 worker threads.
 %
 The same can be seen in Figure~\ref{fig:one_middleware_set_rt_mw} where we can see the response time fan out at the same number of clients.
 %
-As we can further see in Figure~\ref{fig:one_middleware_set_tp_mw} the maximum throughput we can achieve is approximately XX\todo{real number} ops/sec.
+As we can further see in Figure~\ref{fig:one_middleware_set_tp_mw} the maximum throughput we can achieve is approximately 14000 ops/sec.
 %
 From the experiments using only one server we know however that one memcached server can handle up to approx. 16000 ops/sec.
 %
@@ -707,7 +733,35 @@ We can also look at the Figure~\ref{fig:one_middleware_set_ql} and see a similar
 %
 As long as the system is undersaturated the queue length should not increase significantly, after the system is saturated the queue length will increase linearly similar to the response time.
 %
-Therefore we can conclude here that the middleware is the bottleneck, and that the middleware can handle up to XX\todo{real number} \texttt{SET} ops/sec, as long as the middleware does not need to coordinate those requests across multiple servers.
+Therefore we can conclude here that the middleware is the bottleneck, and that the middleware can handle up to 14000 \texttt{SET} ops/sec, as long as the middleware does not need to coordinate those requests across multiple servers.
+%
+\par
+%
+I just want to add a quick note to the experiment using 64 threads.
+%
+In contrast to the other configurations there are not very clear signs that the system is saturated, since the plots of response time, throughput and queue length do not show the same "corners" we would expect.
+%
+Since we ran the experiments multiple times beforehand we know that we should expect saturation at 192 clients.
+%
+The assumption is, which is supported by the larger error bars, is that in the setting with 192 total clients there were some clients which had significantly less throughput than others. 
+%
+This would of course pull down the average, since the average is not really a robust measure, we know that one outlier is enough to influence the average.
+%
+This was checked and in the logs it can be verified that there were a few virtual clients which had a lower throughput than others.
+%
+However that is why we include error bars.
+%
+But to motivate the decision that at 64 threads the middleware is saturated at 192 clients a bit more we can look at Figure~\ref{fig:one_middleware_set_st_mw} where we can see the service time of the memcached server.
+%
+There we can see that the service time gets stable at 192 clients.
+%
+This behaviour is also true for the other thread configurations.
+%
+In theory this service time should stay completely flat, since the servers are not saturated.
+%
+In previous experiments we learned however that as long as we are adding more load to the server the service time will increase, which in turn means that after 192 clients we do not add more load to the server.
+%
+This supports above conclusion that the middleware is saturated at 192 clients when using 64 threads.
 %
 Oversaturation did not occur in this experiment.
 %
@@ -715,6 +769,7 @@ Oversaturation did not occur in this experiment.
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/middleware_get_tp_s.png}
@@ -731,6 +786,7 @@ Oversaturation did not occur in this experiment.
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/middleware_interactive_get_rt_ms.png}
         \caption{\texttt{GET} Response time according to Interactive Law based on Throughput}
@@ -740,6 +796,7 @@ Oversaturation did not occur in this experiment.
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_1_one_middleware/0-1/middleware_queue_length.png}
         \caption{\texttt{GET} Queue Length}
@@ -765,9 +822,9 @@ We can quickly see that at first it is correct that memcached is the bottleneck,
 %
 However at some point the service time stays flat.
 %
-Specifically at 24 clients using 8 threads, at 48 clients for 16 and 32 threads, and finally at 96 clients for 64 threads.\todo{check numbers after experiment run} 
+Specifically at 24 clients using 8 threads, at 48 clients for 16 and 32 threads, and finally at 96 clients for 64 threads.
 %
-At first glance it might seem that the middleware is the bottleneck since the service time of the servers does not increase anymore.
+At first glance it seems that the middleware is the bottleneck since the service time of the servers does not increase anymore.
 %
 \par
 What happens inside the middleware, is that each of the workers is processing a request at all times. 
@@ -794,7 +851,28 @@ Also in this experiment we could not really see the system in a undersaturated p
 %
 For that we ran another experiment with the same configuration as in section~\ref{sec:one_server_explanantion}.
 %
-\missingfigure{Plots for reduced version of one middleware get}
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_1_one_middleware_reduced/0-1/middleware_get_tp_s.png}
+        \caption{\texttt{GET} Throughput}
+        \label{fig:one_middleware_reduced_get_tp_mw}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_1_1_one_middleware_reduced/0-1/middleware_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time}
+        \label{fig:one_middleware_reduced_get_rt_mw}
+    \end{minipage}
+\end{figure}
+%
+As we can see, we can saturate the middleware using \texttt{GET} requests already at 6 total clients.
+%
+In Figure~\ref{fig:one_middleware_reduced_get_rt_mw} we can see a few anomalies when using 1 and two clients, however in combination with Figure~\ref{fig:one_middleware_reduced_get_tp_mw} we can find slight increase in the response time at 6 clients.
+%
+Of course these numbers are rather small, therefore it is not as clear as in the above illustrations, however the goal is to show the system in an undersaturated state, which these plots certainly do.
 %
 \subsection{Two Middlewares}
 %
@@ -808,7 +886,7 @@ For this experiment we will use the following system setup:
 	\item 1 memcached server
 \end{itemize}
 %
-We vary the number of virtual clients per thread from 1 to XX\todo{real number}.
+We vary the number of virtual clients per thread from 1 to 40.
 %
 \subsubsection{Hypothesis}
 %
@@ -818,12 +896,13 @@ Again we only use one server, therefore we expect again in this case that \textt
 %
 Further as we increase the number of worker threads, more clients should be needed to saturate the system.
 %
-\subsubsection{Explanation}
+\subsubsection{Explanation}\label{subsec:two_middlewares_explanation}
 %
 \paragraph{Write-Only Workload}
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_set_tp_s.png}
@@ -840,6 +919,7 @@ Further as we increase the number of worker threads, more clients should be need
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_interactive_set_rt_ms.png}
         \caption{\texttt{SET} Response time IRTL}
@@ -849,6 +929,7 @@ Further as we increase the number of worker threads, more clients should be need
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/1-0/middleware_queue_length.png}
         \caption{\texttt{SET} Queue Length}
@@ -862,13 +943,27 @@ Further as we increase the number of worker threads, more clients should be need
     \end{minipage}
 \end{figure}
 %
-By looking at Figure~\ref{fig:two_middlewares_set_tp_mw} we see that we can handle approximately XX\todo{real number} clients for  threads, XX\todo{real number} clients for 16 threads, XX\todo{real number} clients for 32 threads and finally XX\todo{real number} clients for 64 threads before the system is saturated.
+By looking at Figure~\ref{fig:two_middlewares_set_tp_mw} we see that we can handle approximately 48 clients for 8 threads, 96 clients for 16 threads, 144 clients for 32 threads and finally 192 clients for 64 threads before the system is saturated.
 %
 From section~\ref{sec:one_server_explanantion} we know that one server can handle approximately 16000 write ops/sec.
 %
-Therefore we can assume that the server is not the bottleneck before the middlewares before we reach approximately 16000 ops/sec.
+Interestingly we can see that we can achieve a higher throughput using two middlewares and one server, than only using one server.
 %
-We can confirm that by looking at~\ref{fig:two_middlewares_set_st_mw} which shows that for 8, 16 and 32 threads the service time of memcached stays almost constant, indicating that the server is not saturated. 
+However I would argue that this is due to VM allocation in the Azure Cloud.
+%
+In all experiments we used the same configuration for memcached, therefore in principle we should not see differences this big in throughput of one server.
+
+We can see the measurements in this section are noisier than in previous sections.
+%
+Further it is always difficult to compare absolute numbers between experiments, more so since the VMs were deallocated and allocated again between the first experiment and this one.
+%
+Thus we still assume that the server can handle about 16000 \texttt{SET} ops/sec when saturated, in a "normal" setting, where "normal" means in a average allocation.
+%
+Therefore we can still assume that the server is not the bottleneck before the middlewares before we reach approximately 16000 ops/sec.
+%
+\par
+%
+We can confirm the assumption that the middleware is the bottleneck by looking at~\ref{fig:two_middlewares_set_st_mw} which shows that for 8, 16 and 32 threads the service time of memcached stays almost constant, indicating that the server is not saturated. 
 %
 Even though the server is not saturated and the service time is almost constant, the response time still increases.
 %
@@ -878,11 +973,12 @@ We can further support this conclusion by looking at the queue length in the mid
 %
 \par
 %
+\todo{recheck after definitive plots}
 However the configuration using 64 threads behaves differently.
 %
 First we can see that when the system is saturated we can handle approximately 16000 ops/sec which, as mentioned before, should saturate the server.
 %
-If we again turn to the service time we can see that at the same time when we reach 16000 ops/sec the service time of memcached starts to increase linearly, therefore letting us conclude that the server is the bottleneck after we reach XX\todo{real number} clients.
+If we again turn to the service time we can see that at the same time when we reach 16000 ops/sec the service time of memcached starts to increase linearly, therefore letting us conclude that the server is the bottleneck after we reach 192 clients.
 %
 Again we can further support this conclusion using Figure~\ref{fig:two_middlewares_set_ql} where we can see that the queue length  does increase, however combining this with the increasing service time, again supports the statement that the middleware is not the bottleneck using 64 threads.
 %
@@ -890,6 +986,7 @@ Again we can further support this conclusion using Figure~\ref{fig:two_middlewar
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_get_tp_s.png}
@@ -906,6 +1003,7 @@ Again we can further support this conclusion using Figure~\ref{fig:two_middlewar
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_interactive_get_rt_ms.png}
         \caption{\texttt{GET} Response time according to Interactive Law based on Throughput}
@@ -915,6 +1013,7 @@ Again we can further support this conclusion using Figure~\ref{fig:two_middlewar
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/2_2_two_middlewares/0-1/middleware_queue_length.png}
         \caption{\texttt{GET} Queue Length}
@@ -951,27 +1050,49 @@ Using the same argumentation as in section~\ref{subsec:one_middleware_explanatio
 %
 Also like in the previous experiments with only one server we cannot see an undersaturated phase of the system.
 %
-Therefore we ran another reduced experiment where we again only use 1 to 6 total clients.
+Therefore we ran another reduced experiment where we again only use 1 to 8 total clients.
 %
-\missingfigure{Plots for reduced version of two middlewares get}
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_1_two_middlewares_reduced/0-1/middleware_get_tp_s.png}
+        \caption{\texttt{GET} Throughput}
+        \label{fig:two_middlewares_reduced_get_tp_mw}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/2_2_1_two_middlewares_reduced/0-1/middleware_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time}
+        \label{fig:two_middlewares_reduced_get_rt_mw}
+    \end{minipage}
+\end{figure}
+%
+As we can rather clearly see the system gets saturated after 6 total clients, supporting the conclusions above that the system is saturated during the whole experiment, since we start at 6 clients in total.
 %
 \subsection{Summary}
-
-Based on the experiments above, fill out the following table. For both of them use the numbers from a single experiment to fill out all lines. Miss rate represents the percentage of GET requests that return no data. Time in the queue refers to the time spent in the queue between the net-thread and the worker threads.
-
-
+%
 \begin{center}
 	{Maximum throughput for one middleware.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
 		\hline                                & Throughput & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware  &            &               &                       &           \\ 
-		\hline Reads: Measured on clients     &            &               & n/a                   &           \\ 
-		\hline Writes: Measured on middleware &            &               &                       & n/a       \\ 
-		\hline Writes: Measured on clients    &            &               & n/a                   & n/a       \\ 
+		\hline Reads: Measured on middleware  &   2824     &     1.16 ms   &         0.1 ms        &   0.8 \%  \\ 
+		\hline Reads: Measured on clients     &   2806     &     2.16 ms   & n/a                   &   0.8 \%  \\ 
+		\hline Writes: Measured on middleware &  13288     &     8.49 ms   &         4.55 ms       & n/a       \\ 
+		\hline Writes: Measured on clients    &  13209     &     14.97 ms  & n/a                   & n/a       \\ 
 		\hline 
 	\end{tabular}
 \end{center}
-
+%
+What is interesting in this table is that the response time measured on the client is significantly higher than the response time measured on the middleware.
+%
+On the middleware we measured the response time from the moment the socket was ready to be read from to the moment we finished processing the request, i.e. including the time the request needs to be written to the socket.
+%
+It is difficult to explain why the request needs so much time to traverse the network, when the pings to not indicate that the network latency is high.
+%
+\todo{check after experiment run}
+%
 \begin{center}
 	{Maximum throughput for two middlewares.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
@@ -983,10 +1104,10 @@ Based on the experiments above, fill out the following table. For both of them u
 		\hline 
 	\end{tabular}
 \end{center}
+%
 
-Based on the data provided in these tables, write at 
-
-\section{Throughput for Writes (90 pts)}
+%
+\section{Throughput for Writes (90 pts)}\label{sec:tp_write}
 %
 \subsection{Full System}
 %
@@ -1016,6 +1137,7 @@ That means we generate a small overhead by having three send and read operations
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../illustrations/plots/3_1_full_system_write/1-0/middleware_set_tp_s.png}
@@ -1032,6 +1154,7 @@ That means we generate a small overhead by having three send and read operations
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/3_1_full_system_write/1-0/middleware_interactive_set_rt_ms.png}
         \caption{\texttt{SET} Response time IRTL}
@@ -1041,6 +1164,7 @@ That means we generate a small overhead by having three send and read operations
 %
 \begin{figure}[H]
 	\centering
+	\captionsetup{width=0.4\textwidth}
     \begin{minipage}{0.5\textwidth}
         \includegraphics[width=\textwidth]{../illustrations/plots/3_1_full_system_write/1-0/middleware_queue_length.png}
         \caption{\texttt{SET} Queue Length}
@@ -1086,14 +1210,15 @@ Oversaturation does not occur in this experiment.
 	{Maximum throughput for the full system}
 	\begin{tabular}{|l|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
 		\hline                                            & WT=8 & WT=16 & WT=32 & WT=64 \\ 
-		\hline Throughput (Middleware)                    &  8290    &   9920    &   11753    &   13435    \\ 
-		\hline Throughput (Derived from MW response time) &  11046   &   12031    &   13412    &   15117    \\ 
-		\hline Throughput (Client)                        &  8254   &   9865    &    11693   &    13365   \\ 
-		\hline Average time in queue                      &  0.45 ms   &    0.96 ms   &    1.89 ms   &   3.44 ms    \\ 
-		\hline Average length of queue                    &  1.04   &  2.78    &    7.23    &   18.99    \\ 
-		\hline Average time waiting for memcached         &  1.51 ms   &   2.79 ms    &    5.00 ms   &   8.93 ms    \\ 
+		\hline Throughput (Middleware)                    &  8290    &  9920    &   11753   &   13435   \\ 
+		\hline Throughput (Derived from MW response time) &  11046   &  12031   &   13412   &   15117   \\ 
+		\hline Throughput (Client)                        &  8254    &  9865    &   11693   &   13365   \\ 
+		\hline Average time in queue                      &  0.45 ms &  0.96 ms &   1.89 ms &   3.44 ms \\ 
+		\hline Average length of queue                    &  1.04    &  2.78    &   7.23    &   18.99   \\ 
+		\hline Average time waiting for memcached         &  1.51 ms &  2.79 ms &   5.00 ms &   8.93 ms \\ 
 		\hline 
 	\end{tabular}
+	\label{max_tp_table}
 \end{center}
 %
 Same as before the values in the table do not completely reflect the absolute maximum throughput recorded.
@@ -1149,122 +1274,749 @@ That means that the requests need to wait longer in the queue before being deque
 All in all there are no real surprises, the system behaves as we would it expect to behave.
 
 \section{Gets and Multi-gets (90 pts)}
-
-For this set of experiments you will use three load generating machines, two middlewares and three memcached servers. Each memtier instance should have 2 virtual clients in total and the number of middleware worker threads is 64, or the one that provides the highest throughput in your system (whichever number of threads is smaller).
-
-For multi-GET workloads, use the \texttt{--ratio} parameter to specify the exact ratio between SETs and GETs. You will have to measure response time on the client as a function of multi-get size, with and without sharding on the middlewares.
-
+%
 \subsection{Sharded Case}
-
-Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
-
-\begin{center}
-	\scriptsize{
-		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 3                       \\ 
-			\hline Number of client machines        & 3                       \\ 
-			\hline Instances of memtier per machine & 2                       \\ 
-			\hline Threads per memtier instance     & 1                       \\
-			\hline Virtual clients per thread       & 2     		            \\ 
-			\hline Workload                         & ratio=1:$<$Multi-Get size$>$             \\
-			\hline Multi-Get behavior               & Sharded                 \\
-			\hline Multi-Get size                   & [1..9]                  \\
-			\hline Number of middlewares            & 2                       \\
-			\hline Worker threads per middleware    & max. throughput config. \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
-			\hline 
-		\end{tabular}
-	} 
-\end{center}
-
-\subsubsection{Explanation}
-
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
-
-\subsection{Non-sharded Case}
-
-Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding disabled. Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
-
-\begin{center}
-	\scriptsize{
-		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 3                       \\ 
-			\hline Number of client machines        & 3                       \\ 
-			\hline Instances of memtier per machine & 2                       \\ 
-			\hline Threads per memtier instance     & 1                       \\
-			\hline Virtual clients per thread       & 2                		 \\ 
-			\hline Workload                         & ratio=1:$<$Multi-Get size$>$              \\
-			\hline Multi-Get behavior               & Non-Sharded             \\
-			\hline Multi-Get size                   & [1..9]                  \\
-			\hline Number of middlewares            & 2                       \\
-			\hline Worker threads per middleware    & max. throughput config. \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
-			\hline 
-		\end{tabular}
-	} 
-\end{center}
-
-\subsubsection{Explanation}
-
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
-
-\subsection{Histogram}
-
-For the case with 6 keys inside the multi-get, display four histograms representing the sharded and non-sharded response time distribution, both as measured on the client, and inside the middleware. Choose the bucket size in the same way for all four, and such that there are at least 10 buckets on each of the graphs.
-
-\subsection{Summary}
-
-Provide a detailed comparison of the sharded and non-shareded modes. For which multi-GET size is sharding the preferred option? Provide a detailed analysis of your system. Add any additional figures and experiments that help you illustrate your point and support your claims.
-
-\section{2K Analysis (90 pts)}
-
-For 3 client machines (with 64 total virtual clients per client VM) measure the throughput and response time of your system in a 2k experiment with repetitions. All GET operations have a single key. Investigate the following parameters:
-
+%
+\subsubsection{System Setup}
+%
+For this experiment we will use the following system setup:
+%
 \begin{itemize}
-		
-	\item Memcached servers: 1 and 3
-	\item Middlewares: 1 and 2
-	\item Worker threads per MW: 8 and 32
-	      	      
+	\item 3 client machines with 2 memtier instances per machine. Each instance of memtier runs with 1 threads.
+	\item 2 middlewares
+	\item 3 memcached servers
 \end{itemize}
-
-Repeat the experiment for (a)~a write-only and (b)~a read-only workload.
-For each of the two workloads, what is the impact of these parameters on throughput, respectively response time?
-
-\begin{center}
-	\scriptsize{
-		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 1 and 3                                     \\ 
-			\hline Number of client machines        & 3                                           \\ 
-			\hline Instances of memtier per machine & 1 (1 middleware) or 2 (2 middlewares) \\ 
-			\hline Threads per memtier instance     & 2 (1 middleware) or 1 (2 middlewares)   \\
-			\hline Virtual clients per thread       &  32                                     \\ 
-			\hline Workload                         & Write-only and Read-only\\
-			\hline Multi-Get behavior               & N/A                                         \\
-			\hline Multi-Get size                   & N/A                                         \\
-			\hline Number of middlewares            & 1 and 2                                     \\
-			\hline Worker threads per middleware    & 8 and 32                                    \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                                   \\ 
-			\hline 
-		\end{tabular}
-	} 
-\end{center}
-
+%
+We will use 2 virtual clients per thread in all the configurations.
+%
+We will vary the multi-get size in the workload from 1 to 12.
+%
+\subsubsection{Hypothesis}
+%
+In this scenario we will be splitting the keys if we encounter more than one key in a \texttt{GET} requests.
+%
+Therefore we expect the response time to be almost constant, as long as the key size is smaller or equal to the number of servers.
+%
+Other than that the system should behave similarly to a normal \texttt{GET} workload, since at some point we should saturate the servers and then the response time should increase linearly again.
+%
+\subsubsection{Explanation}
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/memtier_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time sharded (MT)}
+        \label{fig:full_system_read_sharded_mt_rt}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/middleware_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time sharded (MW)}
+        \label{fig:full_system_read_sharded_mw_rt}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/middleware_interactive_get_rt_ms.png}
+        \caption{\texttt{GET} Response time IRTL}
+        \label{fig:full_system_read_sharded_mw_rt_it}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/middleware_get_tp_s.png}
+        \caption{\texttt{GET} Throughput sharded}
+        \label{fig:full_system_read_sharded_mw_tp}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/middleware_queue_length.png}
+        \caption{\texttt{GET} Queue Length}
+        \label{fig:full_system_read_sharded_mw_ql}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/middleware_get_service_time_ms.png}
+        \caption{\texttt{GET} Service Time of memcached}
+        \label{fig:full_system_read_sharded_mw_st}
+    \end{minipage}
+\end{figure}
+%
+In Figure~\ref{fig:full_system_read_sharded_mt_rt} we can see that the first two datapoints have rather large errors.
+%
+Since the response time in the middleware is rather stable, and the measurement for the response time in the middleware is end to and we can attribute these errors to inconsistencies in the network connecting the client machines and middlewares.
+%
+These outliers do not really affect the argumentation below, but I wanted to mention this fact anyways.
+%
+\par
+%
+First let us look at the throughput in Figure~\ref{fig:full_system_read_sharded_mw_tp}.
+%
+We can see that when increasing the multi-get key size the throughput decreases, which is rather straight forward, since we are requesting more keys per request, even if sharding is enabled.
+%
+In the middleware we try to distribute a \texttt{MULTI-GET} request as equally as possible to the servers.
+%
+\par
+%
+When looking at Figure~\ref{fig:full_system_read_sharded_mw_ql} we can see that for all key sizes, the queue stays empty, therefore we can conclude that we do not saturate the middlewares using these configurations.
+%
+Usually this means that the server is the bottleneck, since 12 total clients in this case on 3 client machines can easily generate enough requests to saturate the servers, as we have seen numerous times in previous experiments.
+%
+We can confirm this suspicion when looking at the service time of the memcached servers in Figure~\ref{fig:full_system_read_sharded_mw_st}.
+%
+\par
+%
+Until we have 3 keys per request the service time is stable, which is to be expected, since we can distribute the requests across mutliple servers, meaning 3 keys should have the same response time as 1 key, with a small overhead for the coordination across the servers, parsing and splitting the command.
+%
+After this point the service time starts to increase linearly, which indicates that the servers are getting saturated.
+%
+From previous experiments we know that we can support approximately 3000 read ops/sec on one server, when retrieving one key.
+%
+In section~\ref{subsec:two_middlewares_explanation} we learned that 2 servers can handle up to approximately 6000 single key \texttt{GET} requests per second. 
+%
+Therefore it is resonable to assume that three servers should be able to handle up to 9000 ops/sec.
+%
+This can be confirmed by again looking at the throughput plot.
+%
+After 6 keys per request multiplying the multi-get key size with the number of requests processed per second matches the maximum of approximately 9000 ops/sec.
+%
+Which again supports the conclusion that the memcached servers are saturated.
+%
+\par
+%
+In Figure~\ref{fig:full_system_read_sharded_mw_rt} and Figure~\ref{fig:full_system_read_sharded_mw_st} see that the increase in response time is mainly due to the increase in service time, therefore we can assume that sharding the command does a small but constant overhead to the processing of the request.
+%
+Further we can compar Figure~\ref{fig:full_system_read_sharded_mw_rt} with Figure~\ref{fig:full_system_read_sharded_mt_rt} and see that the network does also not contribute a significant increase in response time, since the difference between the measured response time in the middleware and memtier is more or less constant.
+%
+\subsection{Non-sharded Case}
+%
+\subsubsection{System Setup}
+%
+For this experiment we will use the following system setup:
+%
+\begin{itemize}
+	\item 3 client machines with 2 memtier instances per machine. Each instance of memtier runs with 1 threads.
+	\item 2 middlewares
+	\item 3 memcached servers
+\end{itemize}
+%
+We will use 2 virtual clients per thread in all the configurations.
+%
+We will vary the multi-get size in the workload from 1 to 12.
+%
+\subsubsection{Hypothesis}
+%
+In this case we do not shard commands, therefore the system should behave a little differently.
+%
+Since we do not process the requests and treat them the same way as \texttt{GET} requests, i.e. send them only to one server, we expect to see lower response times than in the sharded mode with small request sizes
+%
+However with larger requests we expect again the servers to be the main reason for the increase in response time, as we have seen above.
+%
+\subsubsection{Explanation}
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/memtier_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time non-sharded (MT)}
+        \label{fig:full_system_read_mt_rt}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/middleware_get_rt_ms.png}
+        \caption{\texttt{GET} Response Time non-sharded (MW)}
+        \label{fig:full_system_read_mw_rt}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/middleware_interactive_get_rt_ms.png}
+        \caption{\texttt{GET} Response time IRTL}
+        \label{fig:full_system_read_mw_rt_it}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/middleware_get_tp_s.png}
+        \caption{\texttt{GET} Throughput non-sharded}
+        \label{fig:full_system_read_mw_tp}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/middleware_queue_length.png}
+        \caption{\texttt{GET} Queue Length}
+        \label{fig:full_system_read_mw_ql}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/middleware_get_service_time_ms.png}
+        \caption{\texttt{GET} Service Time of memcached}
+        \label{fig:full_system_read_mw_st}
+    \end{minipage}
+\end{figure}
+%
+As we can quickly see when looking at Figure~\ref{fig:full_system_read_mw_ql} also in this case the middleware does not get saturated, the argumentation for this is the same as before.
+%
+Thus we again expect the servers to be the bottleneck of the system, for this we look at the service time in Figure~\ref{fig:full_system_read_mw_st}.
+%
+There we can see that after a workload of 3 keys per request the service time starts to increase linearly.
+%
+This is one indication that the server is the bottleneck sometime after 3 keys per request. 
+%
+Further in Figure~\ref{fig:full_system_read_mw_tp} we can see that with a workload of of 6 keys per request the throughout is approximately 9000 ops/sec, which corresponds with what we learned in previous experiments, that with 3 servers we can handle approximately 9000 single key requests per second.
+%
+This means that at 6 keys per request the servers are saturated, which supports the above conclusion.
+%
+Again we can see that the service time accounts for most of the increase in the response time, which in this case is to be expected since the middleware just relays messages between the clients and the servers.
+%
+Also again we can confirm that the network is not adding significantly to the response time for larger resquests, as we have seen in the sharded case.
+%
+\subsection{Histogram}
+%
+In Figures~\ref{fig:full_system_sharded_read_mt_hist}-\ref{fig:full_system_read_mw_hist} we can see the histograms of response times for a workload of 6 keys per request.
+%
+\par
+%
+In the case of the middleware the construction is rather simple, we just record the response time for all requests and then plot a histogram of those.
+%
+\par
+%
+In the case of memtier it is a bit more difficult since the output of memtier does not give us the same data as the middleware.
+%
+At the end of each run of memtier we receive a cumulative distribution of the response times, meaning each line tells us how many percent of requests have a response time smaller than the mentioned response time on the respective line.
+%
+Using this distribution we can calculate how many percent of requests fall between two specific values of response time.
+%
+We aggregate this data over all clients and runs, using this we can plot a histogram.
+%
+\par
+%
+Since the two systems do not provide us with the same type of data (number of requests vs. percentage) we can plot the histograms on a normalized y-axis, since normalization does not change the shape of histograms.
+%
+Further we capped the response time at 20 msec, since the outliers would make the histograms unreadable.
+%
+For all histograms we use 40 bins, therefore making one bin 0.5 msec wide.
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/memtier_get_hist.png}
+        \caption{\texttt{GET} Histogram sharded mode (MT)}
+        \label{fig:full_system_sharded_read_mt_hist}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_1_full_system_read_sharded/64/middleware_get_hist.png}
+        \caption{\texttt{GET} Histogram sharded mode (MW)}
+        \label{fig:full_system_sharded_read_mw_hist}
+    \end{minipage}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\captionsetup{width=0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/memtier_get_hist.png}
+        \caption{\texttt{GET} Histogram non-sharded mode (MT)}
+        \label{fig:full_system_read_mt_hist}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../illustrations/plots/4_2_full_system_read/64/middleware_get_hist.png}
+        \caption{\texttt{GET} Histogram non-sharded mode (MW)}
+        \label{fig:full_system_read_mw_hist}
+    \end{minipage}
+\end{figure}
+%
+\subsection{Summary}
+%
+Let us start by comparing the histograms above, the allow us to draw a direct comparison between running the middleware in sharded and non-sharded mode.
+%
+First we can see that the response times measured in the middleware are smaller than the ones measured in memtier, this is of course to be expected, since the middleware does not include the network latency between the VMs.
+%
+By comparing Figure~\ref{fig:full_system_sharded_read_mw_hist} with Figure~\ref{fig:full_system_read_mw_hist} we can determine that sharding does not seem to help with processing of the request. 
+%
+We can see that with sharding enabled the amount of requests that have a higher than average response time increases.
+%
+This can be confirmed by looking at Figure~\ref{fig:full_system_read_mw_rt} and comparing it with Figure~\ref{fig:full_system_read_sharded_mw_rt}.
+%
+\par
+%
+In the former the 50th percentile is significantly lower than the average response time, whereas with sharding enabled we see that the median is even larger than the average response time in the latter.
+%
+Further we can see that the average response time in the sharded case is even higher than in the non-sharded case, which further shows that sharding does not really make sense in this setting.
+%
+This indicates that sharding the command sending it to different servers and then reassembling it in the middleware adds an overhead that is not compensated by distributing the load across multiple servers.
+%
+In principle this tells us that the implementation of memcached is rather resilient to retrieving multiple keys, at least for the tested range.
+%
+\par
+%
+In principle it might be a bit counterintuitive that sharded and non sharded mode are behaving so similarly and are saturated at the same points.
+%
+However when we interpret the throughput differently, namely as how many keys per second does the server need to retrieve the values for both modes are approximately the same.
+%
+The difference is just that in the sharded mode the server retrieves multiple smaller requests and in non-sharded larger ones, but the number of keys stays approximately the same.
+%
+\section{2K Analysis (90 pts)}
+%
+\subsection{System Setup}
+%
+For this experiment we will use the following system setup:
+%
+\begin{itemize}
+	\item 3 client machines with 2/1 memtier instances per machine. Each instance of memtier runs with 1/2 threads.
+	\item 2/1 middlewares
+	\item 3/1 memcached servers
+\end{itemize}
+%
+We will run each combination of the mentioned configurations.
+%
+Further we will use 8 and 32 threads in the middleware for each configuration.
+%
+We will use 32 virtual clients per thread in all configurations.
+%
+Also we will run a read-only and a write-only workload.
+%
+\subsection{Parameter Definitions}
+%
+We mentioned in the previous subsection which parameters we are going to test.
+%
+In the following table we can see a summary of that:
+%
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline Factor & Shortname & -1 & +1\\
+\hline
+\hline Worker Threads & WT & 8 & 32\\
+\hline Memcached Servers & MC & 1 & 3 \\
+\hline Middlewares & MW & 1 & 2\\
+\hline
+\end{tabular}
+\caption{Parameter Definitions}
+\end{table}
+%
+We will refer to the parameters in the following tables only by their shortnames.
+%
+Further combinations of parameters will be combined using a *, for example combining the effects of the worker threads and the memcached server will be referred as WT*MC.
+%
+Using these parameters we will assume an additive model of different effects.
+%
+This leads to the following equation we would like to solve for each experiment:
+\[
+a + b \cdot MC + c \cdot MW + d \cdot WT + e \cdot MC \cdot MW + f \cdot MC \cdot WT + g \cdot MW \cdot WT + h \cdot MC \cdot MW \cdot WT = Y
+\]
+%
+Where $Y$ corresponds to either throughput or response time.
+%
+For each experiment we will setup a table and then compute the effects using the sign table method.
+%
+We can use these effects to compute the part of the variation that is explained by each of the variables, and then based on these numbers make conclusions on what has the most influence on our throughput respectively our response time.
+%
+For each experiment we will setup the sign tables for throughput and response time, fill in the results from the experiments and compute the effects.
+%
+Using the effects we can calculate the allocation of variation directly.
+%
+\subsection{Write-only workload}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{|c|c|c|c|c|}
+\hline MW & MC & WT & Avg. TP (ops/sec) & Avg. RT (ms)\\
+\hline
+-1 & -1 & -1 & 5616.83 & 33.12\\
+\hline
+-1 & -1 & 1 & 9514.23 & 17.71\\
+\hline
+1 & -1 & -1 & 7264.69 & 21.00\\
+\hline
+1 & -1 & 1 & 11776.94 & 14.62\\
+\hline
+-1 & 1 & -1 & 4035.64 & 38.35\\
+\hline
+-1 & 1 & 1 & 7010.56 & 24.48\\
+\hline
+1 & 1 & -1 & 5993.84 & 29.86\\
+\hline
+1 & 1 & 1 & 9174.76 & 18.41\\
+\hline
+\end{tabular}
+}
+\caption{Write-Only Workload}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. TP (ops/sec)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 5616.83\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 9514.23\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 7264.69\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 11776.94\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 4035.64\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 7010.56\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 5993.84\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 9174.76\\
+\hline
+60387.49 & 8032.97 & -7957.88 & 14565.49 & 211.83 & 820.86 & -2253.80 & -408.86 & Total\\
+7548.44 & 1004.12 & -994.74 & 1820.69 & 26.48 & 102.61 & -281.72 & -51.11 & Total/8\\
+100.0\% & 18.65\% & 18.3\% & 61.32\% & 0.01\% & 0.19\% & 1.47\% & 0.05\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Write-Only Workload Sign Table Avg. TP (ops/sec)}
+\label{2k_set_tp}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. RT (ms)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 33.12\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 17.71\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 21.00\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 14.62\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 38.35\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 24.48\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 29.86\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 18.41\\
+\hline
+197.55 & -29.77 & 24.66 & -47.11 & 0.67 & 11.45 & -3.54 & -6.61 & Total\\
+24.69 & -3.72 & 3.08 & -5.89 & 0.08 & 1.43 & -0.44 & -0.83 & Total/8\\
+100.0\% & 22.72\% & 15.58\% & 56.89\% & 0.01\% & 3.36\% & 0.32\% & 1.12\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Write-Only Workload Sign Table Avg. RT (ms)}
+\label{2k_set_rt}
+\end{table}
+%
+First we will look at the throughput when using a write-only workload.
+%
+The corresponding computations are shown in Table~\ref{2k_set_tp}
+%
+As we can quickly see the largest portion of the variation happens when we increase the number of worker threads.
+%
+Also when doubling the number of middlewares we can increase the throughput.
+%
+We can explain the fact that increasing the number of workers claims so much of the variation by the fact that we quadruple the number of worker threads, but only double the number of workers when using 2 middlewares.
+%
+\par
+%
+As we can determine by the table adding a memcached server impacts the write throughput rather negatively.
+%
+This is pretty straight forward, since we know that the middleware must coordinate \texttt{SET} requests across multiple servers.
+%
+\par
+%
+Looking at Table~\ref{2k_set_rt} where we can see the variation attribution of the response time we can see similar effects.
+%
+Adding more workers and middlewares decreases the response time, again quadrupling the number of worker threads has much more impact than using two middlewares.
+%
+However when we add a second server the response time increases, which again can be explained by the overhead of replicating \texttt{SET} requests.
+%
+\par
+%
+Interesting to see is that the combined effects of the factors have almost no influence, on the response time or the throughput.
+%
+In the case of MW*MC it seems that using two middlewares directly cancels the overhead of replicating the requests to multiple servers.
+%
+We can also see that by increasing the middlewares and the worker threads we can gain a little more throughput than by using only one of the two.
+%
+The fact that the performance increase is so small is explained by the fact that in this case the single memcached server is saturated by the many worker threads.
+%
+This in turn explains the increase in response time, since saturating the server will increase the service time of the server, which directly impacts the response time of the system.
+%
+\par
+%
+In general the findings above correspond to what we have seen in the previous experiments.
+%
+We saw in section~\ref{subsec:two_middlewares_explanation} that we can saturate the servers using two middlewares and in section~\ref{subsec:one_middleware_explanation} that one middleware is not enough.
+%
+That is why we can gain so much performance by adding a middleware or more worker threads.
+%
+\subsection{Read-only workload}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{|c|c|c|c|c|}
+\hline MW & MC & WT & Avg. TP (ops/sec) & Avg. RT (ms)\\
+\hline
+-1 & -1 & -1 & 2987.82 & 63.30\\
+\hline
+-1 & -1 & 1 & 2939.13 & 64.02\\
+\hline
+1 & -1 & -1 & 3005.22 & 62.47\\
+\hline
+1 & -1 & 1 & 3007.24 & 61.73\\
+\hline
+-1 & 1 & -1 & 8568.48 & 21.17\\
+\hline
+-1 & 1 & 1 & 9071.78 & 19.84\\
+\hline
+1 & 1 & -1 & 8967.35 & 19.64\\
+\hline
+1 & 1 & 1 & 9009.09 & 19.66\\
+\hline
+\end{tabular}
+}
+\caption{Read-Only Workload}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. TP (ops/sec)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 2987.82\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 2939.13\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 3005.22\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 3007.24\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 8568.48\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 9071.78\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 8967.35\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 9009.09\\
+\hline
+47556.11 & 421.69 & 23677.31 & 498.38 & 250.67 & -410.85 & 591.70 & -512.28 & Total\\
+5944.51 & 52.71 & 2959.66 & 62.30 & 31.33 & -51.36 & 73.96 & -64.04 & Total/8\\
+100.0\% & 0.03\% & 99.77\% & 0.04\% & 0.01\% & 0.03\% & 0.06\% & 0.05\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Read-Only Workload Sign Table Avg. TP (ops/sec)}
+\label{2k_get_tp}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{|c|ccccccc|c|}
+\hline I & MW & MC & WT & MW*MC & MW*WT & MC*WT & MW*MC*WT & Avg. RT (ms)\\
+\hline
+1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 & 63.30\\
+1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 & 64.02\\
+1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 & 62.47\\
+1 & 1 & -1 & 1 & -1 & 1 & -1 & -1 & 61.73\\
+1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 & 21.17\\
+1 & -1 & 1 & 1 & -1 & -1 & 1 & -1 & 19.84\\
+1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 & 19.64\\
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 19.66\\
+\hline
+331.82 & -4.84 & -171.21 & -1.33 & 1.42 & -0.11 & -1.28 & 2.80 & Total\\
+41.48 & -0.61 & -21.40 & -0.17 & 0.18 & -0.01 & -0.16 & 0.35 & Total/8\\
+100.0\% & 0.08\% & 99.87\% & 0.01\% & 0.01\% & 0.0\% & 0.01\% & 0.03\% & Variation\\
+\hline
+\end{tabular}
+}
+\caption{Read-Only Workload Sign Table Avg. RT (ms)}
+\label{2k_get_rt}
+\end{table}
+%
+In this case, when using a read-only workload, the system behaves a lot differently.
+%
+All the factors have neglectable impact on the performance of the system except increasing the number of servers.
+%
+As we have seen in the previous experiments, specifcally section~\ref{subsec:one_middleware_explanation} and~\ref{subsec:two_middlewares_explanation} one memcached server is saturated rather quickly when issuing \texttt{GET} requests.
+%
+Therefore it makes sense that as long as we do not widen this bottleneck the system cannot start performing better.
+%
+But as soon as we do exactly that the performance spikes.
+%
+\par
+%
+The same can be seen in Table~\ref{2k_get_rt} with the response time, where increasing the number of memcached servers drastically reduces the response time.
+%
+This is due to the fact that the middleware can load balance read requests across multiple memcached servers.
+%
+In this case adding a server does not add more work for the middleware, but we can saturate up to 3 memcached servers.
+%
+This again can be seen by looking at the throughput, using 3 servers we can achieve approximately 9000 ops/sec, whereas using one we achieve about 3000 ops/sec.
+%
+This is in line with the results from the first two experiments.
+%
+There too using one server we only achieved about 3000 ops/sec and using two servers approximately double that.
+%
 \section{Queuing Model (90 pts)}
-
-Note that for queuing models it is enough to use the experimental results from the previous sections. It is, however, possible that the numbers you need are not only the ones in the figures we asked for, but also the internal measurements that you have obtained through instrumentation of your middleware.
-
+%
+In this section we will build different queueing models for our system.
+%
+The goal is to find out how good the models can predict the values we measured during the experiments, and why they do it well or not.
+%
+For the whole section we will use the maximum observed throughput for a configuration as the service rate $\rho$.
+%
+Additionally we will assume that we have infinite buffers, infinite population size and first come first serve service as simplifications of our system.
+%
 \subsection{M/M/1}
-
-Build queuing model based on Section 4 (write-only throughput) for each worker-thread configuration of the middleware. Use one M/M/1 queue to model your entire system. Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
-
-\subsection{M/M/m}
-
-Build an M/M/m model based on Section 4, where each middleware worker thread is represented as one service.  Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
-
-\subsection{Network of Queues}
-
-Based on Section 3, build a network of queues which simulates your system. Motivate the design of your network of queues and relate it wherever possible to a component of your system. Motivate your choice of input parameters for the different queues inside the network. Perform a detailed analysis of the utilization of each component and clearly state what the bottleneck of your system is. Explain for which experiments the predictions of the model match and for which they do not.
-
+%
+In this section we will build an M/M/1 model of our system. 
+%
+In principile we will model the whole system as one server that processes requests and one queue where requests wait for processing.
+%
+Therefore we do not expect this system to be very accurate, since it simplifies the the system by a lot.
+%
+The data used for this model is based on section~\ref{sec:tp_write}.
+%
+We will build a model for each worker thread configuration.
+%
+The input values for the model are the service rate $\mu$ and the arrival rate $\lambda$, for which we will use Table~\ref{max_tp_table} and the underlying data.
+%
+In principle we vary the arrival rate for the experiments by using the throughput measured in the respsective configurations.
+%
+In the following table we will find the formulas for computing the different metrics according to the textbook.
+%
+\begin{table}
+	\centering
+	\scriptsize{
+	\def\arraystretch{1.25}
+		\begin{tabular}{c|c}
+			\textbf{Metric} & \textbf{Formula}\\
+			\hline
+			Traffic intensity $\rho$ & $\lambda / \mu$			\\
+			Mean number of jobs in system $\expval{n}$ & $\rho/(1-\rho)$\\
+			Mean number of jobs in queue $\expval{n_q}$ & $\rho^2/(1-\rho)$\\
+			Mean response time $\expval{r}$ & $(1/\mu)/(1-\rho)$\\
+			Mean waiting time $\expval{w}$ & $\rho\frac{1/\mu}{1-\rho}$\\
+		\end{tabular}
+		\caption{Computing Metrics in an M/M/1 model}
+		\label{tab:mm1_deriv}	
+	\def\arraystretch{1}
+}
+\end{table}	
+%
+In the following tables we can find the results for the different worker thread configurations.
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{c|ccccccc}
+\hline Metric & C = 6 & C = 12 & C = 24 & C = 48 & C = 96 & C = 192 & C = 288\\
+\hline
+Arrival Rate $\lambda$ & 2869.38 & 5586.12 & 8290.70 & 8920.46 & 8925.23 & 8877.68 & 9059.10\\
+Service Rate $\mu$ & 9800 & 9800 & 9800 & 9800 & 9800 & 9800 & 9800\\
+Traffic Intensity $\rho$ & 0.29 & 0.57 & 0.85 & 0.91 & 0.91 & 0.91 & 0.92\\
+Avg. \# of jobs in system & 0.41 & 1.33 & 5.49 & 10.14 & 10.20 & 9.63 & 12.23\\
+Avg. \# of jobs in queue & 0.17 & 1.76 & 30.17 & 102.86 & 104.10 & 92.65 & 149.50\\
+Avg. Response Time & 0.14 & 0.24 & 0.66 & 1.14 & 1.14 & 1.08 & 1.35\\
+Avg. Waiting Time & 0.04 & 0.14 & 0.56 & 1.03 & 1.04 & 0.98 & 1.25\\
+\end{tabular}
+}
+\caption{Metrics for 8 worker threads}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{c|ccccccc}
+\hline Metric & C = 6 & C = 12 & C = 24 & C = 48 & C = 96 & C = 192 & C = 288\\
+\hline
+Arrival Rate $\lambda$ & 2798.44 & 5442.61 & 8553.49 & 9920.89 & 10265.37 & 10296.55 & 10313.78\\
+Service Rate $\mu$ & 10770 & 10770 & 10770 & 10770 & 10770 & 10770 & 10770\\
+Traffic Intensity $\rho$ & 0.26 & 0.51 & 0.79 & 0.92 & 0.95 & 0.96 & 0.96\\
+Avg. \# of jobs in system & 0.35 & 1.02 & 3.86 & 11.68 & 20.34 & 21.75 & 22.61\\
+Avg. \# of jobs in queue & 0.12 & 1.04 & 14.89 & 136.51 & 413.80 & 472.98 & 511.09\\
+Avg. Response Time & 0.13 & 0.19 & 0.45 & 1.18 & 1.98 & 2.11 & 2.19\\
+Avg. Waiting Time & 0.03 & 0.09 & 0.36 & 1.08 & 1.89 & 2.02 & 2.10\\
+\end{tabular}
+}
+\caption{Metrics for 16 worker threads}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{c|ccccccc}
+\hline Metric & C = 6 & C = 12 & C = 24 & C = 48 & C = 96 & C = 192 & C = 288\\
+\hline
+Arrival Rate $\lambda$ & 2824.91 & 5458.35 & 8412.36 & 10069.96 & 11753.40 & 11927.97 & 11998.37\\
+Service Rate $\mu$ & 12538 & 12538 & 12538 & 12538 & 12538 & 12538 & 12538\\
+Traffic Intensity $\rho$ & 0.23 & 0.44 & 0.67 & 0.80 & 0.94 & 0.95 & 0.96\\
+Avg. \# of jobs in system & 0.29 & 0.77 & 2.04 & 4.08 & 14.98 & 19.55 & 22.23\\
+Avg. \# of jobs in queue & 0.08 & 0.59 & 4.16 & 16.65 & 224.40 & 382.32 & 494.37\\
+Avg. Response Time & 0.10 & 0.14 & 0.24 & 0.41 & 1.27 & 1.64 & 1.85\\
+Avg. Waiting Time & 0.02 & 0.06 & 0.16 & 0.33 & 1.19 & 1.56 & 1.77\\
+\end{tabular}
+}
+\caption{Metrics for 32 worker threads}
+\end{table}
+%
+\begin{table}[H]
+\centering
+\scriptsize{
+\begin{tabular}{c|ccccccc}
+\hline Metric & C = 6 & C = 12 & C = 24 & C = 48 & C = 96 & C = 192 & C = 288\\
+\hline
+Arrival Rate $\lambda$ & 2867.80 & 5481.88 & 8232.06 & 9956.24 & 11796.39 & 13435.25 & 13546.56\\
+Service Rate $\mu$ & 14247 & 14247 & 14247 & 14247 & 14247 & 14247 & 14247\\
+Traffic Intensity $\rho$ & 0.20 & 0.38 & 0.58 & 0.70 & 0.83 & 0.94 & 0.95\\
+Avg. \# of jobs in system & 0.25 & 0.63 & 1.37 & 2.32 & 4.81 & 16.55 & 19.34\\
+Avg. \# of jobs in queue & 0.06 & 0.39 & 1.87 & 5.38 & 23.17 & 273.94 & 374.04\\
+Avg. Response Time & 0.09 & 0.11 & 0.17 & 0.23 & 0.41 & 1.23 & 1.43\\
+Avg. Waiting Time & 0.02 & 0.04 & 0.10 & 0.16 & 0.34 & 1.16 & 1.36\\
+\end{tabular}
+}
+\caption{Metrics for 64 worker threads}
+\end{table}
+%
+What we can instantly see is that if the arrival rate comes close to the service rate of the system the values begin to explode. 
+%
+This because in this model we make several simplifying assumptions, which result in values like the response time and queue length to increase infinitely.
+%
+\par
+%
+Let us start by looking at the queue length.
+%
+As we can see increasing the arrival rate, i.e. the number of clients increases the queue length, this is intuitive. 
+%
+In the case of 8 worker threads it is even a rather good match for the measured values in the real system.
+%
+However when increasing the number of worker threads for the same number of clients the queue length should decrease.
+%
+Looking at the results however we can see that this is not the case for when going from 8 to 16 threads.
+%
+This can be explained by the fact that the service rate in the case of 8 threads is rather high, since we use the maximum observed throughput of the system this can happen.
+%
+We can also see that the maximum traffic intensity for 8 threads is 0.92, therefore not reaching the critical part where values begin to explode.
+%
+Interestingly though the predictions for the queue length using 8 threads are the most accurate.
+%
+\par
+%
+When investigating the response time we can see that the predictions are way off.
+%
+I think in general the service time chosen in this analysis is a bit high, since we never really reach a traffic intensity over 96 \%, making the response time predictions way too low.
+%
+\par
+%
+In general I think we can say that the results M/M/1 model depend very much on the stability of the measurements.
+%
+The more variance in the measurements the more the maximum observed throughput deviates from the average throughput in a saturated state, and if this is the case the predictions become rather inaccurate.
+%
 \end{document}
 

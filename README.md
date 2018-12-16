@@ -52,6 +52,7 @@ This is a python module that contains all the code needed for installing the ser
 
 - Generate 2K analysis tables:
   - `python -m asltesting.run --run_id [RUN_ID] --2k_analysis`
+  - The tables will be printed to stdout.
 
 - Run an experiment locally:
   - Requires Docker and Docker Compose to be installed
@@ -62,9 +63,18 @@ This is a python module that contains all the code needed for installing the ser
 
 This folder contains all the illustrations for the report.
 
+Also in this folder we can find Jupyter Notebooks for the Queueing Models, since we used the aggregated data that were used for the plots these are also here.
+
 ### illustrations/plots
 
 This folder contains all the plots referenced in the report.
-Further in here we can also find the sampled log data that generated the plots, as well as the transformed data that directly was used to generate the plots.
+Also in here we can find the transformed data that directly was used to generate the plots.
+
+## submission_logs
+
+In here we can find the logs for the submission. 
+After preparing the submission the memtier logs for the specific submission will be copied here.
+
+However since the middleware logs are a too large we will just sample them and save them in this folder.
 
 The folder structure follows the same pattern as before and should be rather self explanatory.
