@@ -15,7 +15,7 @@ tests/**/*.log
 *.out
 *.tdo
 .idea.bkp/*
-*.ipynb*
 logs.csv
 fill/*
 report/*.log
+.ipynb*
