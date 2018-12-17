@@ -349,11 +349,13 @@ As mentioned in the objective we want to find out how much, in this case write r
 We can see that the server is saturated by two things:
 %
 \begin{itemize}
-	\item The throughput of the system does not increase anymore when increasing the number of clients. We can determine that easily by if the throughput plot shows a flat line after some point.
+	\item The throughput of the system does not increase anymore when increasing the number of clients. We can determine that easily if the throughput plot shows a flat line after some point, however in many cases the throughput does not behave ideally, therefore we need to use other metrics, like the response time, as well to determine saturation.
 	\item The response time increases linearly. In an ideal system the response time stays flat when the system is not saturated. However in practice a lot of factors can influence the response time, so it might be increasing in a undersaturated system. What we look for in the response time plot is a "knee" which shows an increase in the amount the response increases per new client. 
 \end{itemize}
 %
 In general we will try to use the two conditions above to determine the point at which the system gets saturated.
+%
+\par
 %
 As we can see in Figure~\ref{fig:one_server_set_tp} we can achieve approximately 18000 ops/sec before the server is completely saturated, using 144 clients.
 %
@@ -446,7 +448,7 @@ As we can see rather clearly in Figure~\ref{fig:one_server_reduced_get_tp} the m
 For this experiment we will use the following system setup:
 %
 \begin{itemize}
-	\item 1 client machines with 2 memtier instances per machine. Each instance of memtier runs with 1 threads.
+	\item 1 client machines with 2 memtier instances per machine. Each instance of memtier runs with 1 thread.
 	\item No middlewares
 	\item 2 memcached servers
 \end{itemize}
@@ -556,7 +558,7 @@ This argument lets us conclude fairly certain that memtier must be the bottlenec
 	\begin{tabular}{|l|p{3cm}|p{3cm}|p{4cm}|}
 		\hline                        & Read-only workload & Write-only workload & Configuration gives max. throughput \\ 
 		\hline One memcached server   & 2875 (4 Clients)   & 	16818 (96 Clients)  & Write-Only, 96 Clients       \\ 
-		\hline One load generating VM & 5810 (8 Clients)  & 5809 (8 Clients)   & Write-Only, 12 Clients         \\ 
+		\hline One load generating VM & 5810 (8 Clients)  & 5809 (8 Clients)   & Read-Only, 8 Clients         \\ 
 		\hline 
 	\end{tabular}
 \end{center}
@@ -703,8 +705,6 @@ However since the think time is estimated, also the resulting response time will
 %
 As long as the response time from the interactive law and the measured response time behave similarly, we can assume that the response time and throughput measured is realistic.
 %
-Further since through looking at the idle time we lower-bound the think time, also the response time compute by the Interactive Law serves as a lower bound for the response time measured on the client.
-%
 In the following experiments I will include this plot, but I will not mention it every time.
 %
 \par
@@ -839,7 +839,7 @@ For that we ran another experiment with the same configuration as in section~\re
 %
 As we can see, we can saturate the system using \texttt{GET} requests already at 6 total clients.
 %
-In Figure~\ref{fig:one_middleware_reduced_get_rt_mw} we can see a few anomalies when using 1 and two clients, however in combination with Figure~\ref{fig:one_middleware_reduced_get_tp_mw} we can find slight increase in the response time at 6 clients.
+In Figure~\ref{fig:one_middleware_reduced_get_rt_mw} we can see a few anomalies when using one and two clients, however in combination with Figure~\ref{fig:one_middleware_reduced_get_tp_mw} we can find slight increase in the response time at 6 clients.
 %
 Of course these numbers are rather small, therefore it is not as clear as in the above illustrations, however the goal is to show the system in an undersaturated state, which these plots certainly do.
 %
@@ -924,7 +924,7 @@ This is a first indication that for the three smaller configurations the middlew
 %
 \par
 %
-We can confirm the assumption that the middlewares are the bottleneck by looking at~\ref{fig:two_middlewares_set_st_mw} which shows that for 8, 16 and 32 threads the service time of memcached stays almost constant, indicating that the server is not saturated. 
+We can confirm the assumption that the middlewares are the bottleneck by looking at Figure~\ref{fig:two_middlewares_set_st_mw} which shows that for 8, 16 and 32 threads the service time of memcached stays almost constant, indicating that the server is not saturated. 
 %
 Even though the server is not saturated and the service time is only almost constant, the response time still increases.
 %
@@ -1180,7 +1180,7 @@ Specifically it needs 24 clients for 8 threads, 48 clients for 16 threads, 96 cl
 %
 The same thing can be seen in Figure~\ref{fig:full_system_write_set_rt_mw} showing that the slope of the response time increases for each worker thread configuration at the same thresholds as mentioned before.
 %
-Also since we know from previous experiments a memcached server can handle up to approximately 17000 ops/sec.
+Also we know from previous experiments a memcached server can handle up to approximately 17000 ops/sec.
 %
 In this case we reach a maximum of nearly 14000 ops/sec using 64 threads.
 %
@@ -1392,7 +1392,7 @@ Which again supports the conclusion that the memcached servers are saturated.
 %
 In Figure~\ref{fig:full_system_read_sharded_mw_rt} and Figure~\ref{fig:full_system_read_sharded_mw_st} see that the increase in response time is mainly due to the increase in service time, therefore we can assume that sharding the command does a small but constant overhead to the processing of the request.
 %
-Further we can compar Figure~\ref{fig:full_system_read_sharded_mw_rt} with Figure~\ref{fig:full_system_read_sharded_mt_rt} and see that the network does also not contribute a significant increase in response time, since the difference between the measured response time in the middleware and memtier is more or less constant.
+Further we can compare Figure~\ref{fig:full_system_read_sharded_mw_rt} with Figure~\ref{fig:full_system_read_sharded_mt_rt} and see that the network does also not contribute a significant increase in response time, since the difference between the measured response time in the middleware and memtier is more or less constant.
 %
 \subsection{Non-sharded Case}
 %
@@ -1839,7 +1839,7 @@ That is why we can gain so much performance by adding a middleware or more worke
 %
 In this case, when using a read-only workload, the system behaves a lot differently.
 %
-All the factors have neglectable impact on the performance of the system except increasing the number of servers.
+All the factors have negligible impact on the performance of the system except increasing the number of servers.
 %
 As we have seen in the previous experiments, specifcally section~\ref{subsec:one_middleware_explanation} and~\ref{subsec:two_middlewares_explanation} one memcached server is saturated rather quickly when issuing \texttt{GET} requests.
 %
@@ -1867,7 +1867,7 @@ In this section we will build different queueing models for our system.
 %
 The goal is to find out how good the models can predict the values we measured during the experiments, and why they do it well or not.
 %
-For the whole section we will use the maximum observed throughput for a configuration as the service rate $\rho$.
+For the whole section we will use the maximum observed throughput for a configuration as the service rate $\mu$.
 %
 Additionally we will assume that we have infinite buffers, infinite population size and first come first serve service as simplifications of our system.
 %
@@ -2008,7 +2008,7 @@ Interestingly though the predictions for the queue length using 8 threads are th
 %
 When investigating the response time we can see that the predictions are way off.
 %
-I think in general the service time chosen in this analysis is a bit high, since we never really reach a traffic intensity over 96 \%, making the response time predictions way too low.
+I think in general the service rate chosen in this analysis is a bit high, since we never really reach a traffic intensity over 96 \%, making the response time predictions way too low.
 %
 \par
 %
