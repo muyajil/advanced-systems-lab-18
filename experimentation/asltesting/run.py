@@ -85,9 +85,7 @@ if __name__ == '__main__':
     if len(args.test_names) > 0:
         test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id), args.test_names))
     else:
-        test_configs = list(map(lambda test_name: TestConfiguration(test_name, run_id),
-                                filter(lambda x: x not in args.exclude and 'mini' not in x,
-                                       sorted(os.listdir(paths.Absolute.TESTS)))))
+        raise RuntimeError('At least one test name must be specified')
 
     if args.prepare_submission:
         if args.run_id is None:
@@ -107,6 +105,8 @@ if __name__ == '__main__':
         twoKAnalyzer.generate_sign_table('0-1')
 
     elif args.plot:
+        if args.run_id is None:
+             raise RuntimeError("Plotting must refer to a run_id")
         generate_plots(test_configs)
     elif args.install:
         installer = Installer()
